@@ -104,14 +104,20 @@ El sistema genera notificaciones cuando:
 ```
 RSA-Intern-TIG-MQTT/
 │
-├── agent/                  # Script de telemetría simulado (Python)
-├── telegraf/               # Archivos de configuración Telegraf
-├── influxdb/               # Configuración y políticas de retención
-├── grafana/
-│   ├── dashboards/         # JSONs de paneles
-│   └── alerts/             # Configuración de alertas
-├── docker-compose.yml
-├── .env.example
+├── config/                 # Archivos de configuración JSON
+│   ├── configuracion_mqtt.json
+│   └── configuracion_dispositivo.json
+├── scripts/
+│   ├── agent/             # Script de telemetría simulado (Python)
+│   ├── telegraf/          # Archivos de configuración Telegraf
+│   ├── influxdb/          # Configuración y políticas de retención
+│   └── grafana/           # Dashboards y configuración de alertas
+├── examples/
+│   └── mqtt/              # Ejemplos de cliente MQTT
+├── docs/                  # Documentación del proyecto
+├── env/                   # Variables de entorno
+├── docker-compose.yml     # (pendiente)
+├── .env.example           # (pendiente)
 └── README.md
 ```
 
