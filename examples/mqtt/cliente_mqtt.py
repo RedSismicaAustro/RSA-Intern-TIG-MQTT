@@ -116,9 +116,11 @@ def obtener_logger(id_estacion, log_directory, log_filename):
 ############################################ ~Main~ ###################################################
 def main():
 
+
     config_mqtt_file = "../../config/configuracion_mqtt.json"
     config_dispositivo_file = "../../config/configuracion_dispositivo.json"
     log_directory = "../../log-files"
+
     
     # Lee el archivo de configuración MQTT
     config_mqtt = read_fileJSON(config_mqtt_file)
@@ -158,4 +160,8 @@ def main():
 #######################################################################################################
 if __name__ == '__main__':
     main()
+
 #######################################################################################################
+
+#######################################################################################################
+
