@@ -4,6 +4,8 @@ import json
 import paho.mqtt.client as mqtt
 import time
 import logging
+from datetime import datetime
+
 #######################################################################################################
 
 ##################################### ~Variables globales~ ############################################
@@ -90,7 +92,7 @@ def iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger):
         logger.error(f"Error relacionado con MQTT: {e}")
     except Exception as e:
         logger.error(f"Error general al conectar o publicar en el broker MQTT: {e}")
-
+    return client
 # Función para inicializar y obtener el logger de un cliente
 def obtener_logger(id_estacion, log_directory, log_filename):
     global loggers
@@ -111,6 +113,27 @@ def obtener_logger(id_estacion, log_directory, log_filename):
         loggers[id_estacion] = logger
     return loggers[id_estacion]
 
+# Función para publicar datos de telemetría
+def publicar_datos_telemetria(client, config_mqtt, dispositivo_id):
+    # Leer el tópico de telemetría
+    topicotelemetria = config_mqtt.get("topicTelemetry")
+    # Datos simulados
+    # Dato de temperatura
+    temperatura_celsius = 60
+    # Dato de espacio de disco (GB)
+    disk_free_gb = 1
+    # Datos a enviar
+    payload_telemetria = {
+    "id": dispositivo_id,
+    "timestamp": datetime.now().isoformat(),
+    "temp": temperatura_celsius,
+    "disk_free_gb": disk_free_gb,
+    "status": "on"
+    }
+    # Convertir el diccionario a texto JSON
+    payload_telemetria_str = json.dumps(payload_telemetria)  
+    # Publicar el mensaje
+    result_te = client.publish(topicotelemetria, payload_telemetria_str)
 #######################################################################################################
 
 ############################################# ~Main~ ###################################################
@@ -146,11 +169,17 @@ def main():
         # Inicia el cliente mqtt
         client = iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger)
         # Loop principal
+      
         while True:
             time.sleep(1)
+            # Publicar datos telemetría
+            publicar_datos_telemetria(client, config_mqtt, dispositivo_id)
+            time.sleep(5)  # Esperar 5 segundos
     except KeyboardInterrupt:
         print("Finalizando cliente MQTT...")
         if client:
+            # Al finalizar cliente, asegurar que el estado sea apagado: offline
+            publicar_mensaje(client, config_mqtt["topicStatus"], dispositivo_id, "offline")
             client.loop_stop()
             client.disconnect()
             print("Cliente MQTT finalizado correctamente.")
