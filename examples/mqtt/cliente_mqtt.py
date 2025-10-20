@@ -3,7 +3,9 @@ import os
 import json
 import paho.mqtt.client as mqtt
 import time
+import random
 import logging
+#mport wmi
 from datetime import datetime
 
 #######################################################################################################
@@ -134,6 +136,61 @@ def publicar_datos_telemetria(client, config_mqtt, dispositivo_id):
     payload_telemetria_str = json.dumps(payload_telemetria)  
     # Publicar el mensaje
     result_te = client.publish(topicotelemetria, payload_telemetria_str)
+
+
+# Función para obtener la temperatura
+def obtener_temp():
+    try:
+        # Abrir archivo de temperatura
+        with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+            #Leer y convertir a entero, el valor esta escalado por mil
+            temp_sim_mil = int(f.read().strip())
+        temp_sim = temp_sim_mil / 1000
+        return temp_sim
+    except Exception:
+        return 0  # si falla, retorna temperatura 0
+
+# Función para publicar datos simulados del pc
+def publicar_datos_simulados(client, config_mqtt, dispositivo_id):
+    topicodatossim = config_mqtt.get("topicVariablespc")
+    #temperatura_celsius_sim = obtener_temp()
+        # Rango de valores simulados
+    temperatura_celsius = random.uniform(40, 60)  # temperatura entre 40°C y 60°C
+    disk_free_gb = random.uniform(10, 100)       # disco libre entre 10 y 100 GB
+     # Datos a enviar
+    payload_datos_sim = {
+    "id": dispositivo_id,
+    "timestamp": datetime.now().isoformat(),
+    "temp": temperatura_celsius,
+    "disk_free": disk_free_gb  
+    }
+    # Convertir el diccionario a texto JSON
+    payload_datos_sim__str = json.dumps(payload_datos_sim)  
+    # Publicar el mensaje
+    result_datos_sim = client.publish(topicodatossim, payload_datos_sim__str)
+
+
+# Función para obtener datos simulados del PC
+def obtener_datos_simulados(dispositivo_id, config_mqtt):
+    """
+    Devuelve un payload con temperatura y disco simulados.
+    """
+
+
+    # Construir payload
+    payload = {
+        "id": dispositivo_id,
+        "timestamp": datetime.now().isoformat(),
+        "temp": round(temperatura_celsius, 1),
+        "disk_free_gb": round(disk_free_gb, 1),
+        "status": "on"
+    }
+
+    # Publicar en el tópico de telemetría
+    topic = config_mqtt.get("topicTelemetry", "telemetry/NOM00/data")
+    return topic, json.dumps(payload)
+
+
 #######################################################################################################
 
 ############################################# ~Main~ ###################################################
@@ -174,6 +231,10 @@ def main():
             time.sleep(1)
             # Publicar datos telemetría
             publicar_datos_telemetria(client, config_mqtt, dispositivo_id)
+
+            # Publicar datos simulados
+            publicar_datos_simulados(client, config_mqtt, dispositivo_id)
+
             time.sleep(5)  # Esperar 5 segundos
     except KeyboardInterrupt:
         print("Finalizando cliente MQTT...")
