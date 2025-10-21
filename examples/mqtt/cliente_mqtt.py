@@ -115,19 +115,30 @@ def obtener_logger(id_estacion, log_directory, log_filename):
         loggers[id_estacion] = logger
     return loggers[id_estacion]
 
+# Función para obtener valor de uptime
+def obtener_uptime():
+    try:
+        with open("/proc/uptime", "r") as f:
+            uptime_total = float(f.read().split()[0])  # Primer valor es uptime en segundos
+        return int(uptime_total)
+    except Exception:
+        return 0  # Si falla, retorna 0
+
+
 # Función para publicar datos de telemetría
 def publicar_datos_telemetria(client, config_mqtt, dispositivo_id):
     # Leer el tópico de telemetría
     topicotelemetria = config_mqtt.get("topicTelemetry")
     # Datos simulados
     # Dato de temperatura
-    temperatura_celsius = 60
+    temperatura_celsius = random.uniform(40, 60),  # temperatura entre 40°C y 60°C
     # Dato de espacio de disco (GB)
-    disk_free_gb = 1
+    disk_free_gb = random.uniform(1, 64),  # Espacio entre 1 y 64 GB
     # Datos a enviar
     payload_telemetria = {
     "id": dispositivo_id,
-    "timestamp": datetime.now().isoformat(),
+    "uptime_s": obtener_uptime(),     # uptime
+    "timestamp": datetime.now().isoformat(), #Last event
     "temp": temperatura_celsius,
     "disk_free_gb": disk_free_gb,
     "status": "on"
@@ -138,50 +149,47 @@ def publicar_datos_telemetria(client, config_mqtt, dispositivo_id):
     result_te = client.publish(topicotelemetria, payload_telemetria_str)
 
 
-# Función para obtener la temperatura
-def obtener_temp():
-    try:
-        # Abrir archivo de temperatura
-        with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
-            #Leer y convertir a entero, el valor esta escalado por mil
-            temp_sim_mil = int(f.read().strip())
-        temp_sim = temp_sim_mil / 1000
-        return temp_sim
-    except Exception:
-        return 0  # si falla, retorna temperatura 0
+## Función para obtener la temperatura
+#def obtener_temp():
+#    try:
+#        # Abrir archivo de temperatura
+#        with open("/sys/class/thermal/thermal_zone0/temp", "r") as f:
+#            #Leer y convertir a entero, el valor esta escalado por mil
+#            temp_sim_mil = int(f.read().strip())
+#        temp_sim = temp_sim_mil / 1000
+#        return temp_sim
+#    except Exception:
+#        return 0  # si falla, retorna temperatura 0
 
 # Función para publicar datos simulados del pc
-def publicar_datos_simulados(client, config_mqtt, dispositivo_id):
-    topicodatossim = config_mqtt.get("topicVariablespc")
-    #temperatura_celsius_sim = obtener_temp()
-        # Rango de valores simulados
-    temperatura_celsius = random.uniform(40, 60)  # temperatura entre 40°C y 60°C
-    disk_free_gb = random.uniform(10, 100)       # disco libre entre 10 y 100 GB
-     # Datos a enviar
-    payload_datos_sim = {
-    "id": dispositivo_id,
-    "timestamp": datetime.now().isoformat(),
-    "temp": temperatura_celsius,
-    "disk_free": disk_free_gb  
-    }
-    # Convertir el diccionario a texto JSON
-    payload_datos_sim__str = json.dumps(payload_datos_sim)  
-    # Publicar el mensaje
-    result_datos_sim = client.publish(topicodatossim, payload_datos_sim__str)
+#def publicar_datos_simulados(client, config_mqtt, dispositivo_id):
+#    topicodatossim = config_mqtt.get("topicVariablespc")
+#    #temperatura_celsius_sim = obtener_temp()
+#        # Rango de valores simulados
+#    temperatura_celsius = random.uniform(40, 60)  # temperatura entre 40°C y 60°C
+#    disk_free_gb = random.uniform(10, 100)       # disco libre entre 10 y 100 GB
+#     # Datos a enviar
+#    payload_datos_sim = {
+#    "id": dispositivo_id,
+#    "timestamp": datetime.now().isoformat(),
+#    "temp": temperatura_celsius,
+#    "disk_free": disk_free_gb  
+#    # Convertir el diccionario a texto JSON
+#    payload_datos_sim__str = json.dumps(payload_datos_sim)  
+#    # Publicar el mensaje
+#    result_datos_sim = client.publish(topicodatossim, payload_datos_sim__str)
 
 
 # Función para obtener datos simulados del PC
 def obtener_datos_simulados(dispositivo_id, config_mqtt):
-    """
-    Devuelve un payload con temperatura y disco simulados.
-    """
+
 
 
     # Construir payload
     payload = {
         "id": dispositivo_id,
         "timestamp": datetime.now().isoformat(),
-        "temp": round(temperatura_celsius, 1),
+        "temp": random.uniform(40, 60),  # temperatura entre 40°C y 60°C
         "disk_free_gb": round(disk_free_gb, 1),
         "status": "on"
     }
@@ -233,7 +241,7 @@ def main():
             publicar_datos_telemetria(client, config_mqtt, dispositivo_id)
 
             # Publicar datos simulados
-            publicar_datos_simulados(client, config_mqtt, dispositivo_id)
+            #publicar_datos_simulados(client, config_mqtt, dispositivo_id)
 
             time.sleep(5)  # Esperar 5 segundos
     except KeyboardInterrupt:
