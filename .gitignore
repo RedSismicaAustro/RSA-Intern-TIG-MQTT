@@ -6,4 +6,5 @@ config/configuracion_dispositivo.json
 telegraf-1.36.3/
 telegraf-1.36.3_linux_amd64.tar.gz*
 influxdb2-2.7.1-linux-amd64.tar.gz
+
 influxdb2_linux_amd64/
