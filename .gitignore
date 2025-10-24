@@ -2,3 +2,4 @@ venv/
 log-files/
 config/configuracion_mqtt.json
 config/configuracion_dispositivo.json
+.env
