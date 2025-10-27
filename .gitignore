@@ -1,6 +1,5 @@
 venv/
 log-files/
-config/configuracion_mqtt.json
 config/configuracion_dispositivo.json
 .env
 telegraf-1.36.3/

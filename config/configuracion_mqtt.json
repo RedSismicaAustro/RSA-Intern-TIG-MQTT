@@ -1,0 +1,27 @@
+{
+
+
+     "id": "NOM00",
+     "org": "rsa",
+     "app": "seismic",
+     "cap": "smart",
+     "topics": {
+        
+       "telemetry_state": "{org}/{app}/{cap}/{id}/telemetry/state",
+       "telemetry_health": "{org}/{app}/{cap}/{id}/telemetry/health",
+       "telemetry_heartbeat": "{org}/{app}/{cap}/{id}/telemetry/heartbeat",
+       "events_detected": "{org}/{app}/{cap}/{id}/events/detected",
+       "events_data": "{org}/{app}/{cap}/{id}/events/data"
+     },
+     "qos": {
+       "qos_telemetry": 1,
+       "qos_events": 1
+     },
+	   "retain": {
+	     "retain_state": true,
+	     "retain_telemetry_health": false,
+	     "retain_telemetry_heartbeat": true,
+	     "retain_events_detected": false,
+	     "retain_events_data": false
+	   } 
+}
