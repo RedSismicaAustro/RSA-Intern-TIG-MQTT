@@ -1,5 +1,11 @@
 {
 
+    
+    
+    "topicSuscription": "registrocontinuo/extraer",
+    "topicPublish": "registrocontinuo/eventos",
+    "topicStatus": "status",
+    "topicTelemetry": "telemetry/NOM00/data",
 
      "id": "NOM00",
      "org": "rsa",

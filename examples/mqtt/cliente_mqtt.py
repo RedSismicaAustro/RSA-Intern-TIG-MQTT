@@ -5,9 +5,16 @@ import paho.mqtt.client as mqtt
 import time
 import random
 import logging
-#mport wmi
 from datetime import datetime
+import os
+from dotenv import load_dotenv  # pip install python-dotenv
 
+load_dotenv()
+mqtt_credentials = {
+    "serverAddress": os.getenv("MQTT_BROKER"),
+    "username": os.getenv("MQTT_USERNAME"),
+    "password": os.getenv("MQTT_PASSWORD"),
+}
 #######################################################################################################
 
 ##################################### ~Variables globales~ ############################################
@@ -70,7 +77,7 @@ def publicar_mensaje(client, topic, id, mensaje):
 
 # Función para iniciar el cliente MQTT
 def iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger):
-    client = mqtt.Client(userdata={'config_mqtt': config_mqtt, 'dispositivo_id': dispositivo_id, 'is_reconnecting': False, 'logger': logger})
+    client = mqtt.Client(userdata={'config_mqtt': mqtt_credentials, 'dispositivo_id': dispositivo_id, 'is_reconnecting': False, 'logger': logger})
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
 
@@ -82,8 +89,8 @@ def iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger):
     client.will_set(lwt_topic, payload=lwt_message, qos=1, retain=False)
     
     try:
-        client.username_pw_set(config_mqtt["username"], config_mqtt["password"])
-        client.connect(config_mqtt["serverAddress"], 1883, 60)
+        client.username_pw_set(mqtt_credentials["username"], mqtt_credentials["password"])
+        client.connect(mqtt_credentials["serverAddress"], 1883, 60)
 
         # Publicar mensaje de inicio
         publicar_mensaje(client, config_mqtt["topicStatus"], dispositivo_id, "on")
