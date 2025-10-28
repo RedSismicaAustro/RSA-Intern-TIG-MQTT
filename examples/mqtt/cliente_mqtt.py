@@ -6,6 +6,7 @@ import time
 import random
 import logging
 from datetime import datetime
+from datetime import timezone
 import os
 from dotenv import load_dotenv  # pip install python-dotenv
 
@@ -44,8 +45,12 @@ def on_connect(client, userdata, flags, rc):
         # Publicar mensaje "online" cuando se reconecta
         if userdata['is_reconnecting']:
             logger.info("Publicando mensaje de reconexión...")
-            publicar_mensaje(client, userdata['config_mqtt']["topicStatus"], userdata['dispositivo_id'], "online")
-            userdata['is_reconnecting'] = False
+            estado_online = json.dumps({
+                "status": "online",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+            client.publish(userdata['config_mqtt']["topics"]["telemetry_state"], estado_online, qos=1, retain=True)
+
     else:
         print(f"Error al conectar al broker MQTT. Codigo: {rc}")
         logger.error(f'Error al conectar al broker MQTT. Codigo: {rc}')
@@ -81,19 +86,28 @@ def iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger):
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
 
-    # Crear el mensaje LWT en formato JSON
-    lwt_message = json.dumps({"id": dispositivo_id, "status": "offline"})
-    lwt_topic = "status"  # Tópico LWT para notificar desconexiones
+        # LWT para publicar "offline" automáticamente
+    lwt_message = json.dumps({
+        "status": "offline",
+        "timestamp": datetime.now(timezone.utc).isoformat()
+    })
 
-    # Establecer Last Will and Testament (LWT)
-    client.will_set(lwt_topic, payload=lwt_message, qos=1, retain=False)
+    lwt_topic = config_mqtt["topics"]["telemetry_state"]
+    client.will_set(lwt_topic, payload=lwt_message, qos=1, retain=True)
+
     
     try:
         client.username_pw_set(mqtt_credentials["username"], mqtt_credentials["password"])
         client.connect(mqtt_credentials["serverAddress"], 1883, 60)
 
         # Publicar mensaje de inicio
-        publicar_mensaje(client, config_mqtt["topicStatus"], dispositivo_id, "on")
+        estado_on = json.dumps({
+            "status": "on",
+            "timestamp": datetime.now(timezone.utc).isoformat()
+        })
+        client.publish(config_mqtt["topics"]["telemetry_state"], estado_on, qos=1, retain=True)
+
+
 
         client.loop_start()
 
@@ -145,7 +159,7 @@ def publicar_datos_telemetria(client, config_mqtt, dispositivo_id):
     payload_telemetria = {
     "id": dispositivo_id,
     "uptime_s": obtener_uptime(),     # uptime
-    "timestamp": datetime.now().isoformat(), #Last event
+    "timestamp": datetime.now(timezone.utc).isoformat(), #Last event
     "temp": temperatura_celsius,
     "disk_free_gb": disk_free_gb,
     "status": "on"
@@ -195,7 +209,7 @@ def obtener_datos_simulados(dispositivo_id, config_mqtt):
     # Construir payload
     payload = {
         "id": dispositivo_id,
-        "timestamp": datetime.now().isoformat(),
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "temp": random.uniform(40, 60),  # temperatura entre 40°C y 60°C
         "disk_free_gb": round(disk_free_gb, 1),
         "status": "on"
@@ -204,6 +218,43 @@ def obtener_datos_simulados(dispositivo_id, config_mqtt):
     # Publicar en el tópico de telemetría
     topic = config_mqtt.get("topicTelemetry", "telemetry/NOM00/data")
     return topic, json.dumps(payload)
+
+
+#Funcion healt
+def publicar_datos_health(client, config_mqtt, dispositivo_id):
+    """
+    Publica métricas de hardware en el tópico telemetry_health cada 10 segundos
+    """
+    # Obtener valores simulados
+    temp_cpu = round(random.uniform(40, 60), 1)  # °C
+    disk_free_gb = round(random.uniform(1, 64), 1)  # GB
+    uptime_s = obtener_uptime()  # segundos
+
+    payload_health = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "temp_cpu": temp_cpu,
+        "disk_free_gb": disk_free_gb,
+        "uptime_s": uptime_s
+    }
+
+    # Obtener tópico desde config y reemplazar placeholders
+    topic_template = config_mqtt["topics"]["telemetry_health"]
+    topic = topic_template.format(
+        org=config_mqtt.get("org", "rsa"),
+        app=config_mqtt.get("app", "seismic"),
+        cap=config_mqtt.get("cap", "smart"),
+        id=dispositivo_id
+    )
+
+    # Publicar el mensaje
+    result = client.publish(topic, json.dumps(payload_health), qos=1, retain=False)
+
+    # Log
+    logger = client._userdata['logger']
+    if result.rc == mqtt.MQTT_ERR_SUCCESS:
+        logger.info(f"Publicado telemetry_health en {topic}: {payload_health}")
+    else:
+        logger.error(f"Error al publicar telemetry_health en {topic}: {result.rc}")
 
 
 #######################################################################################################
@@ -241,12 +292,17 @@ def main():
         # Inicia el cliente mqtt
         client = iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger)
         # Loop principal
-      
+        contador_health = 0
+
         while True:
             time.sleep(1)
             # Publicar datos telemetría
             publicar_datos_telemetria(client, config_mqtt, dispositivo_id)
-
+            # Contador para publicar health cada 10 segundos
+            contador_health += 1
+            if contador_health >= 10:
+                publicar_datos_health(client, config_mqtt, dispositivo_id)
+                contador_health = 0
             # Publicar datos simulados
             #publicar_datos_simulados(client, config_mqtt, dispositivo_id)
 
@@ -255,7 +311,13 @@ def main():
         print("Finalizando cliente MQTT...")
         if client:
             # Al finalizar cliente, asegurar que el estado sea apagado: offline
-            publicar_mensaje(client, config_mqtt["topicStatus"], dispositivo_id, "offline")
+            estado_offline = json.dumps({
+                "status": "offline",
+                "timestamp": datetime.now(timezone.utc).isoformat()
+            })
+            client.publish(config_mqtt["topics"]["telemetry_state"], estado_offline, qos=1, retain=True)
+
+
             client.loop_stop()
             client.disconnect()
             print("Cliente MQTT finalizado correctamente.")

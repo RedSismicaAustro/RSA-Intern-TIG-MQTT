@@ -13,8 +13,8 @@
      "cap": "smart",
      "topics": {
         
-       "telemetry_state": "{org}/{app}/{cap}/{id}/telemetry/state",
-       "telemetry_health": "{org}/{app}/{cap}/{id}/telemetry/health",
+       "telemetry_state": "rsa/seismic/smart/NOM00/telemetry/state",
+       "telemetry_health": "rsa/seismic/smart/NOM00/telemetry/health",
        "telemetry_heartbeat": "{org}/{app}/{cap}/{id}/telemetry/heartbeat",
        "events_detected": "{org}/{app}/{cap}/{id}/events/detected",
        "events_data": "{org}/{app}/{cap}/{id}/events/data"
