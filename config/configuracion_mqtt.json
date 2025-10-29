@@ -15,7 +15,7 @@
         
        "telemetry_state": "rsa/seismic/smart/NOM00/telemetry/state",
        "telemetry_health": "rsa/seismic/smart/NOM00/telemetry/health",
-       "telemetry_heartbeat": "{org}/{app}/{cap}/{id}/telemetry/heartbeat",
+       "telemetry_heartbeat": "rsa/seismic/smart/NOM00/telemetry/heartbeat",
        "events_detected": "{org}/{app}/{cap}/{id}/events/detected",
        "events_data": "{org}/{app}/{cap}/{id}/events/data"
      },
