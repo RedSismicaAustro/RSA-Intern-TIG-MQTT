@@ -1,7 +1,4 @@
 {
-
-    
-    
     "topicSuscription": "registrocontinuo/extraer",
     "topicPublish": "registrocontinuo/eventos",
     "topicStatus": "status",

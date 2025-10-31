@@ -6,8 +6,9 @@ import time
 import random
 import logging
 from datetime import datetime, timezone
-from dotenv import load_dotenv  # pip install python-dotenv
+from dotenv import load_dotenv  
 
+# Para las credenciales
 load_dotenv()
 mqtt_credentials = {
     "serverAddress": os.getenv("MQTT_BROKER"),
@@ -64,21 +65,38 @@ def on_disconnect(client, userdata, rc):
     userdata['is_reconnecting'] = True
 
 
-def publicar_mensaje(client, topic, id, mensaje):
-    mensaje_json = json.dumps({"id": id, "status": mensaje})
-    try:
-        result = client.publish(topic, mensaje_json)
-        if result.rc != mqtt.MQTT_ERR_SUCCESS:
-            raise Exception(f"Error al publicar en MQTT. Código de error: {result.rc}")
-        logger = client._userdata['logger']
-        logger.info(f"Mensaje publicado exitosamente en el tópico {topic}: {mensaje_json}")
-    except Exception as e:
-        logger = client._userdata['logger']
-        logger.error(f"Error al intentar publicar en el tópico {topic}. Detalle del error: {e}")
+def publicar_mensaje(client, config_mqtt, topic_key, payload):
+    """
+    Publica un mensaje MQTT usando los valores de QoS y Retain
+    definidos en configuracion_mqtt.json
+    """
+    qos_key = f"qos_{topic_key}"
+    retain_key = f"retain_{topic_key}"
+
+    qos = config_mqtt.get("qos", {}).get(qos_key, 1)
+    retain = config_mqtt.get("retain", {}).get(retain_key, False)
+
+    topic = config_mqtt["topics"].get(topic_key)
+    if not topic:
+        print(f" No se encontró el tópico para '{topic_key}' en la configuración.")
+        return
+
+    result = client.publish(topic, json.dumps(payload), qos=qos, retain=retain)
+    logger = client._userdata['logger']
+
+    if result.rc == mqtt.MQTT_ERR_SUCCESS:
+        logger.info(f" Publicado en {topic} (QoS={qos}, Retain={retain}): {payload}")
+    else:
+        logger.error(f" Error al publicar en {topic}: {result.rc}")
 
 
 def iniciar_cliente_mqtt(config_mqtt, dispositivo_id, logger):
-    client = mqtt.Client(userdata={'config_mqtt': mqtt_credentials, 'dispositivo_id': dispositivo_id, 'is_reconnecting': False, 'logger': logger})
+    client = mqtt.Client(userdata={
+        'config_mqtt': mqtt_credentials,
+        'dispositivo_id': dispositivo_id,
+        'is_reconnecting': False,
+        'logger': logger
+    })
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
 
@@ -233,10 +251,8 @@ def main():
             evento = simular_evento_sismico()
             if evento:
                 last_event_time = datetime.now(timezone.utc)
-                topic_evento = config_mqtt["topics"].get("events_detected", "rsa/seismic/smart/NOM00/events/detected")
-                client.publish(topic_evento, json.dumps(evento), qos=1, retain=False)
+                publicar_mensaje(client, config_mqtt, "events_detected", evento)
                 logger.info(f"Evento sísmico detectado: {evento}")
-
 
             # Heartbeat cada 60 segundos
             if time.time() - ultima_publicacion_heartbeat >= 60:
