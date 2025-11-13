@@ -18,5 +18,12 @@ services:
       DOCKER_INFLUXDB_INIT_BUCKET: ${INFLUXDB_BUCKET}
       DOCKER_INFLUXDB_INIT_RETENTION: ${INFLUXDB_RETENTION}
       DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: ${INFLUXDB_ADMIN_PASSWORD}
+    networks:
+      - monitoring
+
 volumes:
   influxdb_data:
+
+networks:
+  monitoring:
+    external: true
