@@ -1,0 +1,125 @@
+version: '3.8'
+
+# Docker Compose Unificado - TIG Stack + MQTT
+# Red Sísmica del Austro (RSA) - Monitoring Dashboard
+#
+# Este archivo combina InfluxDB, Telegraf y Grafana en un único stack
+# orquestado con dependencias y red compartida automática.
+#
+# Uso:
+#   1. Copiar .env.example a .env y configurar credenciales
+#   2. docker-compose up -d
+#   3. Acceder a Grafana: http://localhost:3000
+#   4. Acceder a InfluxDB: http://localhost:8086
+
+services:
+  # ============================================================================
+  # InfluxDB - Base de datos de series temporales
+  # ============================================================================
+  influxdb:
+    image: influxdb:2.7
+    container_name: rsa-influxdb
+    restart: unless-stopped
+    ports:
+      - "8086:8086"
+    environment:
+      # Modo de inicialización automática
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=${INFLUXDB_ADMIN_USER}
+      - DOCKER_INFLUXDB_INIT_PASSWORD=${INFLUXDB_ADMIN_PASSWORD}
+      - DOCKER_INFLUXDB_INIT_ORG=${INFLUXDB_ORG}
+      - DOCKER_INFLUXDB_INIT_BUCKET=${INFLUXDB_BUCKET}
+      - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUXDB_RETENTION}
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
+    volumes:
+      - influxdb_data:/var/lib/influxdb2
+      - influxdb_config:/etc/influxdb2
+    networks:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "influx", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ============================================================================
+  # Telegraf - Agente de recolección de métricas (MQTT Consumer)
+  # ============================================================================
+  telegraf:
+    image: telegraf:1.28
+    container_name: rsa-telegraf
+    restart: unless-stopped
+    depends_on:
+      influxdb:
+        condition: service_healthy
+    environment:
+      # Configuración MQTT
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      # Configuración InfluxDB
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+    volumes:
+      # Montar configuración de Telegraf (ajustar ruta según tu proyecto)
+      - ../../scripts/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+    networks:
+      - monitoring
+    # Telegraf no expone puertos por defecto (solo consume datos)
+
+  # ============================================================================
+  # Grafana - Dashboard de visualización
+  # ============================================================================
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: rsa-grafana
+    restart: unless-stopped
+    depends_on:
+      - influxdb
+    ports:
+      - "3000:3000"
+    environment:
+      # Credenciales de admin
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      # Configuración regional
+      - GF_DEFAULT_TIMEZONE=America/Guayaquil
+      # Deshabilitar telemetría (opcional)
+      - GF_ANALYTICS_REPORTING_ENABLED=false
+      - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      # Provisioning automático de datasources y dashboards
+      - ../../scripts/grafana/provisioning:/etc/grafana/provisioning:ro
+    networks:
+      - monitoring
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:3000/api/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+# ==============================================================================
+# Redes
+# ==============================================================================
+networks:
+  monitoring:
+    driver: bridge
+    # Esta red permite que todos los servicios se comuniquen entre sí
+    # Puedes conectar otros servicios externos usando:
+    #   docker network connect monitoring <container_name>
+
+# ==============================================================================
+# Volúmenes persistentes
+# ==============================================================================
+volumes:
+  influxdb_data:
+    # Datos de InfluxDB (bases de datos, measurements, etc.)
+  influxdb_config:
+    # Configuración de InfluxDB (tokens, usuarios, etc.)
+  grafana_data:
+    # Datos de Grafana (dashboards, usuarios, configuraciones)
