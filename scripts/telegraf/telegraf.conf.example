@@ -12106,6 +12106,9 @@
     "rsa/seismic/smart/NOM00/events/detected",
     "rsa/seismic/smart/NOM00/events/data"
 ]
+
+   json_string_fields = ["status", "last_event"]
+
   username = "${MQTT_USERNAME}"
   password = "${MQTT_PASSWORD}"
 #     "telegraf/host01/cpu",
