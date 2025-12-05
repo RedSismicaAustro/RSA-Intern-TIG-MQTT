@@ -1,30 +1,32 @@
 {
-    "topicSuscription": "registrocontinuo/extraer",
-    "topicPublish": "registrocontinuo/eventos",
-    "topicStatus": "status",
-    "topicTelemetry": "telemetry/NOM00/data",
+  "topicSuscription": "registrocontinuo/extraer",
+  "topicPublish": "registrocontinuo/eventos",
+  "topicStatus": "status",
+  "topicTelemetry": "telemetry/{id}/data",
 
-     "id": "NOM00",
-     "org": "rsa",
-     "app": "seismic",
-     "cap": "smart",
-     "topics": {
-        
-       "telemetry_state": "rsa/seismic/smart/NOM00/telemetry/state",
-       "telemetry_health": "rsa/seismic/smart/NOM00/telemetry/health",
-       "telemetry_heartbeat": "rsa/seismic/smart/NOM00/telemetry/heartbeat",
-       "events_detected": "rsa/seismic/smart/NOM00/events/detected",
-       "events_data": "{org}/{app}/{cap}/{id}/events/data"
-     },
-     "qos": {
-       "qos_telemetry": 1,
-       "qos_events": 1
-     },
-	   "retain": {
-	     "retain_state": true,
-	     "retain_telemetry_health": false,
-	     "retain_telemetry_heartbeat": true,
-	     "retain_events_detected": false,
-	     "retain_events_data": false
-	   } 
+  "id": "{id}",
+  "org": "rsa",
+  "app": "seismic",
+  "cap": "smart",
+
+  "topics": {
+    "telemetry_state": "rsa/seismic/smart/{id}/telemetry/state",
+    "telemetry_health": "rsa/seismic/smart/{id}/telemetry/health",
+    "telemetry_heartbeat": "rsa/seismic/smart/{id}/telemetry/heartbeat",
+    "events_detected": "rsa/seismic/smart/{id}/events/detected",
+    "events_data": "{org}/{app}/{cap}/{id}/events/data"
+  },
+
+  "qos": {
+    "qos_telemetry": 1,
+    "qos_events": 1
+  },
+
+  "retain": {
+    "retain_state": true,
+    "retain_telemetry_health": false,
+    "retain_telemetry_heartbeat": true,
+    "retain_events_detected": false,
+    "retain_events_data": false
+  }
 }
