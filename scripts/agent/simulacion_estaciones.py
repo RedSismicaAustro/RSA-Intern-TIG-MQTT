@@ -20,6 +20,17 @@ mqtt_credentials = {
 
 loggers = {}
 
+
+# ================================
+# Generar lista dinámica NOMxx
+# ================================
+def generar_lista_estaciones(n):
+    estaciones = []
+    for i in range(n):
+        estaciones.append(f"NOM{str(i).zfill(2)}")
+    return estaciones
+
+
 # ================================
 # Utilidades JSON
 # ================================
@@ -30,6 +41,47 @@ def cargar_json(ruta):
 def guardar_json(ruta, contenido):
     with open(ruta, "w") as f:
         json.dump(contenido, f, indent=4)
+
+
+# ================================
+# Crear configs por estación
+# ================================
+def generar_configs(estaciones):
+
+    # ==== RUTAS A LOS JSON BASE ====
+    base_mqtt_path = "../../config/configuracion_mqtt.json"
+    base_disp_path = "../../config/configuracion_dispositivo.json"
+
+    # Cargar los JSON base que ya tienes creados
+    base_mqtt = cargar_json(base_mqtt_path)
+    base_disp = cargar_json(base_disp_path)
+
+    for est in estaciones:
+
+        # Clonar el JSON del base
+        mqtt_cfg_str = json.dumps(base_mqtt)
+        disp_cfg_str = json.dumps(base_disp)
+
+        # Reemplazos
+        mqtt_cfg_str = mqtt_cfg_str.replace("{id}", est)
+        mqtt_cfg_str = mqtt_cfg_str.replace("{org}", base_mqtt["org"])
+        mqtt_cfg_str = mqtt_cfg_str.replace("{app}", base_mqtt["app"])
+        mqtt_cfg_str = mqtt_cfg_str.replace("{cap}", base_mqtt["cap"])
+
+        disp_cfg_str = disp_cfg_str.replace("{id}", est)
+
+        # Convertir de vuelta a JSON
+        mqtt_cfg = json.loads(mqtt_cfg_str)
+        disp_cfg = json.loads(disp_cfg_str)
+
+        # Guardar archivo MQTT por estación
+        guardar_json(f"../../config/configuracion_mqtt_{est}.json", mqtt_cfg)
+
+        # Guardar archivo dispositivo por estación
+        guardar_json(f"../../config/configuracion_dispositivo_{est}.json", disp_cfg)
+
+    print("✔ Archivos generados correctamente para:", estaciones)
+
 
 
 # ================================
@@ -54,7 +106,7 @@ def obtener_logger(id_estacion):
 
 
 # ================================
-# FUNCIONES DEL CÓDIGO ORIGINAL
+# FUNCIONES MQTT
 # ================================
 def on_connect(client, userdata, flags, rc):
     logger = userdata["logger"]
@@ -93,7 +145,7 @@ def obtener_uptime():
 def publicar_mensaje(client, topics, topic_key, payload, logger):
     topic = topics.get(topic_key)
     if not topic:
-        logger.error(f"Tópico {topic_key} NO existe en la config.")
+        logger.error(f"Tópico {topic_key} NO existe.")
         return
 
     client.publish(topic, json.dumps(payload), qos=1, retain=False)
@@ -165,7 +217,6 @@ def mqtt_loop(config_mqtt, config_disp):
     client.on_connect = on_connect
     client.on_disconnect = on_disconnect
 
-    # LWT
     lwt_message = json.dumps({"status": "offline", "timestamp": datetime.now(timezone.utc).isoformat()})
     client.will_set(topics["telemetry_state"], payload=lwt_message, qos=1, retain=True)
 
@@ -181,22 +232,18 @@ def mqtt_loop(config_mqtt, config_disp):
 
     while True:
 
-        # TELEMETRÍA (cada 1s)
         publicar_datos_telemetria(client, topics, est, logger)
 
-        # HEALTH (cada 10s)
         contador_health += 1
         if contador_health >= 10:
             publicar_datos_health(client, topics, est, logger)
             contador_health = 0
 
-        # EVENTO SÍSMICO
         evento = simular_evento_sismico()
         if evento:
             last_event_time = datetime.now(timezone.utc)
             publicar_mensaje(client, topics, "events_detected", evento, logger)
 
-        # HEARTBEAT (cada 60s)
         if time.time() - last_heartbeat >= 60:
             publicar_heartbeat(client, topics, last_event_time, logger)
             last_heartbeat = time.time()
@@ -209,7 +256,12 @@ def mqtt_loop(config_mqtt, config_disp):
 # ================================
 def main():
 
-    estaciones = ["NOM00", "NOM01"]
+    n_estaciones = int(input("¿Cuántas estaciones deseas simular?: "))
+
+    estaciones = generar_lista_estaciones(n_estaciones)
+
+    print("✔ Generando archivos de configuración para:", estaciones)
+    generar_configs(estaciones)
 
     for est in estaciones:
         mqtt_cfg = cargar_json(f"../../config/configuracion_mqtt_{est}.json")

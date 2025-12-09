@@ -2,17 +2,17 @@
     "topicSuscription": "registrocontinuo/extraer",
     "topicPublish": "registrocontinuo/eventos",
     "topicStatus": "status",
-    "topicTelemetry": "telemetry/NOM01/data",
-    "id": "NOM01",
+    "topicTelemetry": "telemetry/NOM03/data",
+    "id": "NOM03",
     "org": "rsa",
     "app": "seismic",
     "cap": "smart",
     "topics": {
-        "telemetry_state": "rsa/seismic/smart/NOM01/telemetry/state",
-        "telemetry_health": "rsa/seismic/smart/NOM01/telemetry/health",
-        "telemetry_heartbeat": "rsa/seismic/smart/NOM01/telemetry/heartbeat",
-        "events_detected": "rsa/seismic/smart/NOM01/events/detected",
-        "events_data": "rsa/seismic/smart/NOM01/events/data"
+        "telemetry_state": "rsa/seismic/smart/NOM03/telemetry/state",
+        "telemetry_health": "rsa/seismic/smart/NOM03/telemetry/health",
+        "telemetry_heartbeat": "rsa/seismic/smart/NOM03/telemetry/heartbeat",
+        "events_detected": "rsa/seismic/smart/NOM03/events/detected",
+        "events_data": "rsa/seismic/smart/NOM03/events/data"
     },
     "qos": {
         "qos_telemetry": 1,
