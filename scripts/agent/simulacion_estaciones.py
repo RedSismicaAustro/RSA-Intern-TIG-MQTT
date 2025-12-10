@@ -52,7 +52,7 @@ def generar_configs(estaciones):
     base_mqtt_path = "../../config/configuracion_mqtt.json"
     base_disp_path = "../../config/configuracion_dispositivo.json"
 
-    # Cargar los JSON base que ya tienes creados
+    # Cargar los JSON base 
     base_mqtt = cargar_json(base_mqtt_path)
     base_disp = cargar_json(base_disp_path)
 
@@ -260,7 +260,7 @@ def main():
 
     estaciones = generar_lista_estaciones(n_estaciones)
 
-    print("✔ Generando archivos de configuración para:", estaciones)
+    print("Generando archivos de configuración para:", estaciones)
     generar_configs(estaciones)
 
     for est in estaciones:
