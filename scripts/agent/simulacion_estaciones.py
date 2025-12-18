@@ -80,7 +80,7 @@ def generar_configs(estaciones):
         # Guardar archivo dispositivo por estación
         guardar_json(f"../../config/configuracion_dispositivo_{est}.json", disp_cfg)
 
-    print("✔ Archivos generados correctamente para:", estaciones)
+    print("Archivos generados correctamente para:", estaciones)
 
 
 
@@ -113,7 +113,7 @@ def on_connect(client, userdata, flags, rc):
     est = userdata["id"]
 
     if rc == 0:
-        logger.info(f"[{est}] Conectado al broker.")
+        logger.info(f"[{est}] Conectado al broker")
 
         estado_online = json.dumps({
             "status": "online",
@@ -226,6 +226,7 @@ def mqtt_loop(config_mqtt, config_disp):
 
     logger.info(f"Estación {est} iniciada.")
 
+    #Contadores para tiempos de publicación
     contador_health = 0
     last_event_time = datetime.now(timezone.utc)
     last_heartbeat = time.time()
