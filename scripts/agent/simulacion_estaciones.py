@@ -20,6 +20,11 @@ mqtt_credentials = {
 
 loggers = {}
 
+# ================================
+# PERFILES DE FALLO
+# ================================
+# Estaciones que simulan temperatura alta
+ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
 
 # ================================
 # Generar lista dinámica NOMxx
@@ -48,21 +53,17 @@ def guardar_json(ruta, contenido):
 # ================================
 def generar_configs(estaciones):
 
-    # ==== RUTAS A LOS JSON BASE ====
     base_mqtt_path = "../../config/configuracion_mqtt.json"
     base_disp_path = "../../config/configuracion_dispositivo.json"
 
-    # Cargar los JSON base 
     base_mqtt = cargar_json(base_mqtt_path)
     base_disp = cargar_json(base_disp_path)
 
     for est in estaciones:
 
-        # Clonar el JSON del base
         mqtt_cfg_str = json.dumps(base_mqtt)
         disp_cfg_str = json.dumps(base_disp)
 
-        # Reemplazos
         mqtt_cfg_str = mqtt_cfg_str.replace("{id}", est)
         mqtt_cfg_str = mqtt_cfg_str.replace("{org}", base_mqtt["org"])
         mqtt_cfg_str = mqtt_cfg_str.replace("{app}", base_mqtt["app"])
@@ -70,18 +71,13 @@ def generar_configs(estaciones):
 
         disp_cfg_str = disp_cfg_str.replace("{id}", est)
 
-        # Convertir de vuelta a JSON
         mqtt_cfg = json.loads(mqtt_cfg_str)
         disp_cfg = json.loads(disp_cfg_str)
 
-        # Guardar archivo MQTT por estación
         guardar_json(f"../../config/configuracion_mqtt_{est}.json", mqtt_cfg)
-
-        # Guardar archivo dispositivo por estación
         guardar_json(f"../../config/configuracion_dispositivo_{est}.json", disp_cfg)
 
     print("Archivos generados correctamente para:", estaciones)
-
 
 
 # ================================
@@ -152,18 +148,27 @@ def publicar_mensaje(client, topics, topic_key, payload, logger):
     logger.info(f"Publicado en {topic}: {payload}")
 
 
+# ================================
+# TELEMETRÍA (con fallo de temp)
+# ================================
 def publicar_datos_telemetria(client, topics, est, logger):
+
+    if est in ESTACIONES_TEMP_ALTA:
+        temp = round(random.uniform(80, 95), 1)
+    else:
+        temp = round(random.uniform(40, 60), 1)
+
     payload = {
         "id": est,
         "uptime_s": obtener_uptime(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "temp": round(random.uniform(40, 60), 1),
-        "disk_free_gb": round(random.uniform(1, 64), 1),
+        "temp": temp,
+        "disk_free_gb": round(random.uniform(10, 64), 1),
         "status": "on"
     }
 
-    client.publish(topics["telemetry_state"], json.dumps(payload))
-    logger.info(f"[{est}] Telemetría enviada.")
+    client.publish(topics["telemetry_state"], json.dumps(payload), qos=1)
+    logger.info(f"[{est}] Telemetría enviada. Temp={temp}")
 
 
 def publicar_datos_health(client, topics, est, logger):
@@ -226,7 +231,6 @@ def mqtt_loop(config_mqtt, config_disp):
 
     logger.info(f"Estación {est} iniciada.")
 
-    #Contadores para tiempos de publicación
     contador_health = 0
     last_event_time = datetime.now(timezone.utc)
     last_heartbeat = time.time()
@@ -256,7 +260,7 @@ def mqtt_loop(config_mqtt, config_disp):
 # MAIN
 # ================================
 def main():
-
+    print("Con fallo de temp")
     n_estaciones = int(input("¿Cuántas estaciones deseas simular?: "))
 
     estaciones = generar_lista_estaciones(n_estaciones)
