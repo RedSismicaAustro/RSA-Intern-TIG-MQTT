@@ -26,6 +26,9 @@ loggers = {}
 # Estaciones que simulan temperatura alta
 ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
 
+# Estaciones que simulan disco bajo
+ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04"]
+
 # ================================
 # Generar lista dinámica NOMxx
 # ================================
@@ -149,7 +152,7 @@ def publicar_mensaje(client, topics, topic_key, payload, logger):
 
 
 # ================================
-# TELEMETRÍA (con fallo de temp)
+# TELEMETRÍA (con fallo de temp y espcio disco)
 # ================================
 def publicar_datos_telemetria(client, topics, est, logger):
 
@@ -158,17 +161,24 @@ def publicar_datos_telemetria(client, topics, est, logger):
     else:
         temp = round(random.uniform(40, 60), 1)
 
+    # ---- DISCO ----
+    if est in ESTACIONES_DISCO_BAJO:
+        disk_free = round(random.uniform(0.5, 2.0), 1)
+    else:
+        disk_free = round(random.uniform(10, 64), 1)
+
+
     payload = {
         "id": est,
         "uptime_s": obtener_uptime(),
         "timestamp": datetime.now(timezone.utc).isoformat(),
         "temp": temp,
-        "disk_free_gb": round(random.uniform(10, 64), 1),
+        "disk_free_gb": disk_free,
         "status": "on"
     }
 
     client.publish(topics["telemetry_state"], json.dumps(payload), qos=1)
-    logger.info(f"[{est}] Telemetría enviada. Temp={temp}")
+    logger.info(f"[{est}] Telemetría enviada | Temp={temp}°C | Disk={disk_free}GB")
 
 
 def publicar_datos_health(client, topics, est, logger):
