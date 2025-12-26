@@ -27,7 +27,7 @@ loggers = {}
 ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
 
 # Estaciones que simulan disco bajo
-ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04"]
+ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04","NOM05"]
 
 # ================================
 # Generar lista dinámica NOMxx
@@ -270,13 +270,22 @@ def mqtt_loop(config_mqtt, config_disp):
 # MAIN
 # ================================
 def main():
-    print("Con fallo de temp")
+    print("----------------------------------------------------------")
+    print("Simulación estaciones")
     n_estaciones = int(input("¿Cuántas estaciones deseas simular?: "))
 
     estaciones = generar_lista_estaciones(n_estaciones)
 
     print("Generando archivos de configuración para:", estaciones)
     generar_configs(estaciones)
+
+
+
+    print("----------------------------------------------------------")
+    print("Estaciones con fallos simulados")
+    print("Estaciones con tempertatura alta", ESTACIONES_TEMP_ALTA)
+    print("Estaciones con espacio bajo", ESTACIONES_DISCO_BAJO)
+    
 
     for est in estaciones:
         mqtt_cfg = cargar_json(f"../../config/configuracion_mqtt_{est}.json")
