@@ -29,6 +29,8 @@ ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
 # Estaciones que simulan disco bajo
 ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04","NOM05"]
 
+ESTACIONES_CAIDAS = ["NOM06", "NOM07"]  # Pon aquí manualmente las que hoy caen
+
 # ================================
 # Generar lista dinámica NOMxx
 # ================================
@@ -155,6 +157,11 @@ def publicar_mensaje(client, topics, topic_key, payload, logger):
 # TELEMETRÍA (con fallo de temp y espcio disco)
 # ================================
 def publicar_datos_telemetria(client, topics, est, logger):
+
+     # ---- ESTACIÓN CAÍDA ----
+    if est in ESTACIONES_CAIDAS:
+        logger.warning(f"[{est}] Estación caída, no se publica telemetría.")
+        return  # No publica nada
 
     if est in ESTACIONES_TEMP_ALTA:
         temp = round(random.uniform(80, 95), 1)
@@ -285,6 +292,7 @@ def main():
     print("Estaciones con fallos simulados")
     print("Estaciones con tempertatura alta", ESTACIONES_TEMP_ALTA)
     print("Estaciones con espacio bajo", ESTACIONES_DISCO_BAJO)
+    print("Estaciones con falla de silencio", ESTACIONES_CAIDAS)
     
 
     for est in estaciones:
