@@ -29,7 +29,12 @@ ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
 # Estaciones que simulan disco bajo
 ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04","NOM05"]
 
-ESTACIONES_CAIDAS = ["NOM06", "NOM07"]  # Pon aquí manualmente las que hoy caen
+#Silencio
+ESTACIONES_CAIDAS = ["NOM06", "NOM07"]  
+
+# Estaciones
+
+ESTACIONES_SILENCIO = ["NOM08", "NOM09"]
 
 # ================================
 # Generar lista dinámica NOMxx
@@ -253,6 +258,12 @@ def mqtt_loop(config_mqtt, config_disp):
     last_heartbeat = time.time()
 
     while True:
+                # ---- SILENCIO TOTAL ----
+        if est in ESTACIONES_SILENCIO:
+            logger.warning(f"[{est}] Estación en SILENCIO TOTAL.")
+            time.sleep(60)
+            continue
+
 
         publicar_datos_telemetria(client, topics, est, logger)
 
