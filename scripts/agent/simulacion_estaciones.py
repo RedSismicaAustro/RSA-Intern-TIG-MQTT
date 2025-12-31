@@ -163,10 +163,12 @@ def publicar_mensaje(client, topics, topic_key, payload, logger):
 # ================================
 def publicar_datos_telemetria(client, topics, est, logger):
 
-     # ---- ESTACIÓN CAÍDA ----
     if est in ESTACIONES_CAIDAS:
-        logger.warning(f"[{est}] Estación caída, no se publica telemetría.")
-        return  # No publica nada
+        logger.error(f"[{est}] Estación CAÍDA. Simulando desconexión.")
+        client.loop_stop()
+        client.disconnect()
+        return
+
 
     if est in ESTACIONES_TEMP_ALTA:
         temp = round(random.uniform(80, 95), 1)
@@ -258,11 +260,16 @@ def mqtt_loop(config_mqtt, config_disp):
     last_heartbeat = time.time()
 
     while True:
-                # ---- SILENCIO TOTAL ----
         if est in ESTACIONES_SILENCIO:
-            logger.warning(f"[{est}] Estación en SILENCIO TOTAL.")
-            time.sleep(60)
+            logger.warning(f"[{est}] Estación en SILENCIO (sin telemetría).")
+
+            if time.time() - last_heartbeat >= 60:
+                publicar_heartbeat(client, topics, last_event_time, logger)
+                last_heartbeat = time.time()
+
+            time.sleep(1)
             continue
+
 
 
         publicar_datos_telemetria(client, topics, est, logger)
