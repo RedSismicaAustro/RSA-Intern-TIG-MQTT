@@ -25,15 +25,11 @@ loggers = {}
 # ================================
 # Estaciones que simulan temperatura alta
 ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
-
 # Estaciones que simulan disco bajo
 ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04","NOM05"]
-
-#Silencio
+# Estaciones que simulan caida
 ESTACIONES_CAIDAS = ["NOM06", "NOM07"]  
-
-# Estaciones
-
+# Estaciones que simulan silencio
 ESTACIONES_SILENCIO = ["NOM08", "NOM09"]
 
 # ================================
