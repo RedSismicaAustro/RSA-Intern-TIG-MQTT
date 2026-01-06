@@ -28,9 +28,11 @@ ESTACIONES_TEMP_ALTA = ["NOM00","NOM01","NOM02"]
 # Estaciones que simulan disco bajo
 ESTACIONES_DISCO_BAJO = ["NOM03", "NOM04","NOM05"]
 # Estaciones que simulan caida
-ESTACIONES_CAIDAS = ["NOM06", "NOM07"]  
+#ESTACIONES_CAIDAS = ["NOM06", "NOM07"]  
+ESTACIONES_CAIDAS = []  
 # Estaciones que simulan silencio
-ESTACIONES_SILENCIO = ["NOM08", "NOM09"]
+#ESTACIONES_SILENCIO = ["NOM08", "NOM09"]
+ESTACIONES_SILENCIO = []  
 
 # ================================
 # Generar lista dinámica NOMxx

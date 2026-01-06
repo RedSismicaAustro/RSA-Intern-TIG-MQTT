@@ -1,0 +1,3520 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM00/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM00/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM00",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM00/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM00/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM00",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM00/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM00",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM00/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM00",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM00/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM00/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM00",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 5
+      },
+      "id": 6,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM01/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM01/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM01",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 5
+      },
+      "id": 15,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM01/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM01/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM01",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 5
+      },
+      "id": 24,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM01/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM01/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM01",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 5
+      },
+      "id": 33,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM01/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM01/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM01",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 5
+      },
+      "id": 34,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM01/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM01/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM01",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 10
+      },
+      "id": 7,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM02/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM02/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM02",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 10
+      },
+      "id": 16,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM02/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM02/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM02",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 10
+      },
+      "id": 25,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM02/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM02/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM02",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 10
+      },
+      "id": 35,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM02/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM02/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM02",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 10
+      },
+      "id": 37,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM02/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM02/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM02",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM03/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM03/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM03",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 15
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM03/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM03/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM03",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 15
+      },
+      "id": 26,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM03/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM03/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM03",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 15
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM03/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM03/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM03",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 15
+      },
+      "id": 44,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM03/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM03/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM03",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 20
+      },
+      "id": 9,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM04/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM04/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM04",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 20
+      },
+      "id": 18,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM04/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM04/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM04",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 20
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM04/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM04/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM04",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 20
+      },
+      "id": 38,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM04/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM04/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM04",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 20
+      },
+      "id": 45,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM04/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM04/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM04",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 25
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM05/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM05/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM05",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 25
+      },
+      "id": 19,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM05/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM05/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM05",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 25
+      },
+      "id": 28,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM05/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM05/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM05",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 25
+      },
+      "id": 39,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM05/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM05/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM05",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 25
+      },
+      "id": 49,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM05/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM05/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM05",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 30
+      },
+      "id": 11,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM06/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM06/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM06",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 30
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM06/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM06/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM06",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 30
+      },
+      "id": 29,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM06/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM06/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM06",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 30
+      },
+      "id": 40,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM06/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM06/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM06",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 30
+      },
+      "id": 46,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM06/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM06/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM06",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 35
+      },
+      "id": 12,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM07/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM07/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM07",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 35
+      },
+      "id": 21,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM07/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM07/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM07",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 35
+      },
+      "id": 30,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM07/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM07/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM07",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 35
+      },
+      "id": 41,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM07/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM07/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM07",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 35
+      },
+      "id": 47,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM07/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM07/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM07",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 40
+      },
+      "id": 13,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM08/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM08/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM08",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 40
+      },
+      "id": 22,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM08/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM08/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM08",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 40
+      },
+      "id": 31,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM08/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM08/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM08",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 40
+      },
+      "id": 42,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM08/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM08/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM08",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 40
+      },
+      "id": 48,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM08/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM08/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM08",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [
+            {
+              "options": {
+                "offline": {
+                  "color": "red",
+                  "index": 1,
+                  "text": "Offline"
+                },
+                "on": {
+                  "color": "green",
+                  "index": 0,
+                  "text": "Online"
+                }
+              },
+              "type": "value"
+            }
+          ],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 4,
+        "x": 0,
+        "y": 45
+      },
+      "id": 14,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^status \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM09/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM09/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Estado estación NOM09",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 5
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 4,
+        "y": 45
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^disk_free_gb \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM09/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -5m)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM09/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"disk_free_gb\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Espacio libre de disco NOM09",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 50
+              }
+            ]
+          },
+          "unit": "celsius"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 9,
+        "y": 45
+      },
+      "id": 32,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^temp \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM09/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM09/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"temp\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Temperatura NOM09",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 14,
+        "y": 45
+      },
+      "id": 43,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^uptime_s \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM09/telemetry/state\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM09/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Tiempo encendido NOM09",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "default": true,
+        "type": "influxdb",
+        "uid": "cf9apbpcklkowd"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 5,
+        "x": 19,
+        "y": 45
+      },
+      "id": 50,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "standard",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "/^last_event \\{host=\"bb068ae68f68\", topic=\"rsa/seismic/smart/NOM09/telemetry/heartbeat\"\\}$/",
+          "values": false
+        },
+        "showPercentChange": false,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "11.2.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "influxdb",
+            "uid": "cf9apbpcklkowd"
+          },
+          "query": "from(bucket: \"rsa\")\r\n  |> range(start: -2h)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/NOM09/telemetry/heartbeat\")\r\n  |> filter(fn: (r) => r._field == \"last_event\")\r\n  |> last()",
+          "refId": "A"
+        }
+      ],
+      "title": "Último evento NOM09",
+      "type": "stat"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-5m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Dashboard varias estaciones",
+  "uid": "df9ar0v2o53b4f",
+  "version": 5,
+  "weekStart": ""
+}
