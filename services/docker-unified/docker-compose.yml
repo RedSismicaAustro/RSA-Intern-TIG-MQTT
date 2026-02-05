@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Docker Compose Unificado - TIG Stack + MQTT
 # Red Sísmica del Austro (RSA) - Monitoring Dashboard
 #
@@ -32,8 +30,8 @@ services:
       - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUXDB_RETENTION}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
     volumes:
-      - influxdb_data:/var/lib/influxdb2
-      - influxdb_config:/etc/influxdb2
+      - /home/rsa/data/influxdb/data:/var/lib/influxdb2
+      - /home/rsa/data/influxdb/config:/etc/influxdb2
     networks:
       - monitoring
     healthcheck:
@@ -65,7 +63,7 @@ services:
       - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
     volumes:
       # Montar configuración de Telegraf (ajustar ruta según tu proyecto)
-      - ../telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ./telegraf.conf:/etc/telegraf/telegraf.conf:ro
     networks:
       - monitoring
     # Telegraf no expone puertos por defecto (solo consume datos)
@@ -91,7 +89,7 @@ services:
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
     volumes:
-      - grafana_data:/var/lib/grafana
+      - /home/rsa/data/grafana:/var/lib/grafana
       # Provisioning automático de datasources y dashboards
       - ../grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
@@ -114,12 +112,9 @@ networks:
     #   docker network connect monitoring <container_name>
 
 # ==============================================================================
-# Volúmenes persistentes
+# Volúmenes persistentes (Bind Mounts usados arriba)
 # ==============================================================================
-volumes:
-  influxdb_data:
-    # Datos de InfluxDB (bases de datos, measurements, etc.)
-  influxdb_config:
-    # Configuración de InfluxDB (tokens, usuarios, etc.)
-  grafana_data:
-    # Datos de Grafana (dashboards, usuarios, configuraciones)
+# volumes:
+#   influxdb_data:
+#   influxdb_config:
+#   grafana_data:
