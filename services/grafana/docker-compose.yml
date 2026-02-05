@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   grafana:
     container_name: grafana
@@ -23,3 +21,7 @@ services:
 
 volumes:
   grafana-data:
+
+networks:
+  monitoring:
+    external: true

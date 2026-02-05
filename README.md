@@ -150,10 +150,10 @@ El sistema genera notificaciones cuando:
 
 ```
 RSA-Intern-TIG-MQTT/
-├── .env.example                    # ✅ Plantilla de variables de entorno
-├── .gitignore                      # ✅ Excluye .env, logs, configs locales
-├── CLAUDE.md                       # ✅ Guía para Claude Code
-├── README.md                       # ✅ Este archivo
+├── .env.example                   # ✅ Plantilla de variables de entorno
+├── .gitignore                     # ✅ Excluye .env, logs, configs locales
+├── CLAUDE.md                      # ✅ Guía para Claude Code
+├── README.md                      # ✅ Este archivo
 │
 ├── config/
 │   ├── configuracion_mqtt.json    # ✅ Estructura de tópicos MQTT y QoS
@@ -169,7 +169,7 @@ RSA-Intern-TIG-MQTT/
 │   │   └── docker-compose.yml     # ✅ Servicio InfluxDB 2.7
 │   ├── grafana/
 │   │   └── docker-compose.yml     # ✅ Servicio Grafana 11.2.0
-│   └── docker-unified/            # ✅ Ejemplo de Docker Compose unificado
+│   └── docker-unified/            # ✅ Docker Compose unificado
 │       ├── docker-compose.yml     #    Stack TIG completo en un archivo
 │       ├── README.md              #    Documentación del ejemplo
 │       ├── COMPARISON.md          #    Comparación separado vs. unificado
@@ -177,13 +177,13 @@ RSA-Intern-TIG-MQTT/
 │
 ├── examples/                      # ✅ Ejemplos adicionales (legacy)
 │
-├── docs/                           # ✅ 12 capturas de pantalla del sistema
+├── docs/                          # ✅ 12 capturas de pantalla del sistema
 │   ├── Dashboard.png              #    funcionando end-to-end
 │   ├── bucket_configurado.png
 │   └── ...
 │
 └── env/
-    └── mseed_py39.lock             # ✅ Lock file de micromamba
+    └── mseed_py39.lock            # ✅ Lock file de micromamba
 ```
 
 **Leyenda:**
