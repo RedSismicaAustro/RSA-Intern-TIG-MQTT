@@ -53,7 +53,7 @@ Este directorio contiene un **ejemplo completo** de cómo usar Docker Compose pa
 Copia el archivo de ejemplo y edítalo con tus credenciales:
 
 ```bash
-cd examples/docker-unified
+cd services/docker-unified
 cp .env.example .env
 nano .env  # o vim, code, etc.
 ```
@@ -112,7 +112,7 @@ El archivo `docker-compose.yml` monta la configuración desde:
 ### Iniciar el Stack Completo
 
 ```bash
-cd examples/docker-unified
+cd services/docker-unified
 docker-compose up -d
 ```
 
@@ -296,7 +296,7 @@ Este ejemplo es **standalone** y no modifica tu configuración actual. Las difer
 
 | Aspecto | Implementación Actual | Este Ejemplo |
 |---------|----------------------|--------------|
-| Ubicación | `services/influxdb/` y `services/grafana/` | `examples/docker-unified/` |
+| Ubicación | `services/influxdb/` y `services/grafana/` | `services/docker-unified/` |
 | Red | `monitoring` (externa) | `docker-unified_monitoring` (interna) |
 | Telegraf | No incluido en docker-compose | Incluido en el stack |
 | Variables | `.env` en raíz | `.env` en este directorio |

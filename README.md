@@ -167,15 +167,15 @@ RSA-Intern-TIG-MQTT/
 │   │   └── influxdb.conf.example  # ✅ Config básica de output
 │   ├── influxdb/
 │   │   └── docker-compose.yml     # ✅ Servicio InfluxDB 2.7
-│   └── grafana/
-│       └── docker-compose.yml     # ✅ Servicio Grafana 11.2.0
-│
-├── examples/
+│   ├── grafana/
+│   │   └── docker-compose.yml     # ✅ Servicio Grafana 11.2.0
 │   └── docker-unified/            # ✅ Ejemplo de Docker Compose unificado
 │       ├── docker-compose.yml     #    Stack TIG completo en un archivo
 │       ├── README.md              #    Documentación del ejemplo
 │       ├── COMPARISON.md          #    Comparación separado vs. unificado
 │       └── start.sh               #    Script de inicio automatizado
+│
+├── examples/                      # ✅ Ejemplos adicionales (legacy)
 │
 ├── docs/                           # ✅ 12 capturas de pantalla del sistema
 │   ├── Dashboard.png              #    funcionando end-to-end

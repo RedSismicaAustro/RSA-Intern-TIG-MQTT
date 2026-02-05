@@ -148,7 +148,7 @@ docker logs telegraf
 
 **Unificado:**
 ```bash
-cd RSA-Intern-TIG-MQTT/examples/docker-unified
+cd RSA-Intern-TIG-MQTT/services/docker-unified
 cp .env.example .env
 nano .env  # Configurar credenciales
 
@@ -192,7 +192,7 @@ docker logs -f telegraf
 nano services/telegraf/telegraf.conf
 
 # Reiniciar desde docker-compose
-cd examples/docker-unified
+cd services/docker-unified
 docker-compose restart telegraf
 
 # Ver logs
@@ -263,7 +263,7 @@ docker-compose up -d
 
 **Unificado:**
 ```bash
-cd examples/docker-unified
+cd services/docker-unified
 nano docker-compose.yml  # Cambiar versión de imagen
 
 docker-compose up -d grafana  # Solo actualizar Grafana
@@ -299,7 +299,7 @@ docker volume prune
 
 **Unificado:**
 ```bash
-cd examples/docker-unified
+cd services/docker-unified
 docker-compose down -v
 
 # Opcionalmente eliminar volúmenes nombrados
@@ -343,7 +343,7 @@ Para migrar tu proyecto de separado a unificado:
 
 ```bash
 # 1. Copiar docker-compose.yml unificado a la raíz
-cp examples/docker-unified/docker-compose.yml .
+cp services/docker-unified/docker-compose.yml .
 
 # 2. Actualizar rutas de volúmenes (ya no son relativos desde services/)
 nano docker-compose.yml
