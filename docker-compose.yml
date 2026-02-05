@@ -35,7 +35,7 @@ services:
     env_file: .env
     volumes:
       - grafana-data:/var/lib/grafana
-      - ./scripts/grafana/provisioning:/etc/grafana/provisioning
+      - ./services/grafana/provisioning:/etc/grafana/provisioning
     networks:
       - monitoring
     restart: unless-stopped

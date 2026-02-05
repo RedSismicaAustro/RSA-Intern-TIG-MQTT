@@ -15,7 +15,7 @@ El sistema está completamente operativo, documentado y listo para su uso. Se ha
 
 ### 🔹 1. Agente de telemetría ✅ IMPLEMENTADO
 
-**Ubicación:** [`scripts/agent/cliente_mqtt.py`](scripts/agent/cliente_mqtt.py)
+**Ubicación:** [`services/agent/cliente_mqtt.py`](services/agent/cliente_mqtt.py)
 
 Agente completo de telemetría ejecutado en estaciones Raspberry Pi. Desarrollado en **Python** con **Paho MQTT**, publica múltiples tipos de métricas hacia el **Broker MQTT** de la RSA.
 
@@ -43,7 +43,7 @@ rsa/seismic/smart/<station_id>/events/detected
 
 ### 🔹 2. Telegraf ⚠️ PARCIALMENTE IMPLEMENTADO
 
-**Ubicación:** [`scripts/telegraf/telegraf.conf.example`](scripts/telegraf/telegraf.conf.example)
+**Ubicación:** [`services/telegraf/telegraf.conf.example`](services/telegraf/telegraf.conf.example)
 
 Agente de recolección ejecutado en contenedor **Docker**, actúa como **mqtt_consumer** suscribiéndose a los tópicos de telemetría.
 
@@ -66,7 +66,7 @@ rsa/seismic/smart/+/events/detected
 
 ### 🔹 3. InfluxDB ✅ IMPLEMENTADO
 
-**Ubicación:** [`scripts/influxdb/docker-compose.yml`](scripts/influxdb/docker-compose.yml)
+**Ubicación:** [`services/influxdb/docker-compose.yml`](services/influxdb/docker-compose.yml)
 
 Base de datos de series temporales donde se almacenan las métricas de todas las estaciones.
 
@@ -82,7 +82,7 @@ Base de datos de series temporales donde se almacenan las métricas de todas las
 
 ### 🔹 4. Grafana ✅ IMPLEMENTADO
 
-**Ubicación:** [`scripts/grafana/docker-compose.yml`](scripts/grafana/docker-compose.yml)
+**Ubicación:** [`services/grafana/docker-compose.yml`](services/grafana/docker-compose.yml)
 
 Interfaz de visualización en tiempo real para monitorear todas las estaciones.
 
@@ -96,7 +96,7 @@ Interfaz de visualización en tiempo real para monitorear todas las estaciones.
 
 **Estado:**
 - ✅ Sistema de dashboards entregado y funcional (ver capturas en [`docs/`](docs/))
-- ✅ Provisioning de dashboards preparado en `scripts/grafana/provisioning/dashboards/`
+- ✅ Provisioning de dashboards preparado en `services/grafana/provisioning/dashboards/`
 - ✅ Dashboards exportados en formato JSON incluidos en el repositorio
 - ✅ Reglas de alertas documentadas y preparas para configuración
 
@@ -159,7 +159,7 @@ RSA-Intern-TIG-MQTT/
 │   ├── configuracion_mqtt.json    # ✅ Estructura de tópicos MQTT y QoS
 │   └── configuracion_dispositivo.json  # ⚠️ En .gitignore, falta .example
 │
-├── scripts/
+├── services/
 │   ├── agent/
 │   │   └── cliente_mqtt.py        # ✅ Agente de telemetría (COMPLETO)
 │   ├── telegraf/
@@ -217,7 +217,7 @@ micromamba install -c conda-forge paho-mqtt python-dotenv -y
 docker network create monitoring
 
 # Iniciar InfluxDB
-cd scripts/influxdb
+cd services/influxdb
 docker-compose up -d
 
 # Iniciar Grafana
@@ -228,7 +228,7 @@ docker-compose up -d
 **4. Ejecutar agente de telemetría:**
 ```bash
 cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
-python scripts/agent/cliente_mqtt.py
+python services/agent/cliente_mqtt.py
 ```
 
 **5. Acceder a las interfaces:**
@@ -238,7 +238,7 @@ python scripts/agent/cliente_mqtt.py
 ### Método Alternativo: Docker Compose Unificado
 
 Para una experiencia simplificada con un solo comando, ver el ejemplo completo en:
-[`examples/docker-unified/README.md`](examples/docker-unified/README.md)
+[`services/docker-unified/README.md`](services/docker-unified/README.md)
 
 ---
 
@@ -301,9 +301,9 @@ El proyecto se entrega con todas las funcionalidades core operativas y validadas
 ## Documentación Adicional
 
 - **[CLAUDE.md](CLAUDE.md)**: Guía completa del proyecto para Claude Code
-- **[examples/docker-unified/](examples/docker-unified/)**: Ejemplo de Docker Compose unificado
-  - [README.md](examples/docker-unified/README.md): Documentación del ejemplo
-  - [COMPARISON.md](examples/docker-unified/COMPARISON.md): Comparación de enfoques
+- **[services/docker-unified/](services/docker-unified/)**: Ejemplo de Docker Compose unificado
+  - [README.md](services/docker-unified/README.md): Documentación del ejemplo
+  - [COMPARISON.md](services/docker-unified/COMPARISON.md): Comparación de enfoques
 - **[docs/](docs/)**: Capturas de pantalla del sistema funcionando
 
 ---

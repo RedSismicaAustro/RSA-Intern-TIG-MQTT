@@ -73,7 +73,7 @@ telemetry/<station_id>/data                         # Legacy format (deprecated)
 ### ✅ Implemented (Functional)
 
 **Telemetry Agent:**
-- [scripts/agent/cliente_mqtt.py](scripts/agent/cliente_mqtt.py): Full telemetry agent (10 KB)
+- [services/agent/cliente_mqtt.py](services/agent/cliente_mqtt.py): Full telemetry agent (10 KB)
   - MQTT connection with authentication via environment variables
   - Last Will Testament (LWT) for disconnect detection
   - Multi-metric publishing: state, health, heartbeat, events
@@ -84,19 +84,19 @@ telemetry/<station_id>/data                         # Legacy format (deprecated)
   - Seismic event simulation (10% probability)
 
 **Docker Infrastructure:**
-- [scripts/influxdb/docker-compose.yml](scripts/influxdb/docker-compose.yml): InfluxDB 2.7 service
+- [services/influxdb/docker-compose.yml](services/influxdb/docker-compose.yml): InfluxDB 2.7 service
   - Auto-initialization with admin user/org/bucket
   - Persistent volume (`influxdb_data`)
   - Environment-based configuration
   - Port 8086 exposed
-- [scripts/grafana/docker-compose.yml](scripts/grafana/docker-compose.yml): Grafana 11.2.0 service
+- [services/grafana/docker-compose.yml](services/grafana/docker-compose.yml): Grafana 11.2.0 service
   - Admin credentials via `.env`
   - Timezone: America/Guayaquil
   - Provisioning folders prepared
   - Port 3000 exposed
 
 **Telegraf Configuration:**
-- [scripts/telegraf/telegraf.conf.example](scripts/telegraf/telegraf.conf.example): MQTT consumer configured
+- [services/telegraf/telegraf.conf.example](services/telegraf/telegraf.conf.example): MQTT consumer configured
   - Input: `mqtt_consumer` for all topic types
   - Output: `influxdb_v2` (partially configured)
   - Environment variable integration
@@ -112,7 +112,7 @@ telemetry/<station_id>/data                         # Legacy format (deprecated)
 
 **Documentation & Dashboards:**
 - [docs/](docs/): screenshots showing the system working end-to-end ✓
-- [scripts/grafana/provisioning/dashboards/](scripts/grafana/provisioning/dashboards/): Exported JSON dashboards for automatic provisioning ✓
+- [services/grafana/provisioning/dashboards/](services/grafana/provisioning/dashboards/): Exported JSON dashboards for automatic provisioning ✓
 - [docker-compose.yml](docker-compose.yml): Unified stack configuration ✓
 
 - Unified `docker-compose.yml` at project root
@@ -165,7 +165,7 @@ docker network create monitoring
 
 **4. Start InfluxDB**:
 ```bash
-cd scripts/influxdb
+cd services/influxdb
 docker-compose up -d
 ```
 
@@ -178,7 +178,7 @@ docker-compose up -d
 **6. Run telemetry agent**:
 ```bash
 cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
-python scripts/agent/cliente_mqtt.py
+python services/agent/cliente_mqtt.py
 ```
 
 **Access services**:
@@ -221,7 +221,7 @@ RSA-Intern-TIG-MQTT/
 │   ├── configuracion_mqtt.json    # MQTT topic structure & QoS settings ✓
 │   └── configuracion_dispositivo.json  # (gitignored, needs .example)
 │
-├── scripts/
+├── services/
 │   ├── agent/
 │   │   └── cliente_mqtt.py        # Telemetry agent (10 KB, COMPLETE) ✓
 │   ├── telegraf/
@@ -312,7 +312,7 @@ cp .env.example .env
 **Run agent**:
 ```bash
 cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
-python scripts/agent/cliente_mqtt.py
+python services/agent/cliente_mqtt.py
 ```
 
 **Logs** are written to `log-files/` (auto-created on first run)

@@ -7,7 +7,7 @@ Este directorio contiene un **ejemplo completo** de cómo usar Docker Compose pa
 | Aspecto | Docker Compose Separado | Docker Compose Unificado |
 |---------|------------------------|--------------------------|
 | Archivos | 2-3 archivos en diferentes carpetas | 1 archivo en la raíz |
-| Inicio | `cd scripts/influxdb && docker-compose up -d`<br>`cd scripts/grafana && docker-compose up -d` | `docker-compose up -d` |
+| Inicio | `cd services/influxdb && docker-compose up -d`<br>`cd services/grafana && docker-compose up -d` | `docker-compose up -d` |
 | Red Docker | Crear manualmente: `docker network create monitoring` | Creada automáticamente |
 | Orden de inicio | Manual (esperar entre comandos) | Automático con `depends_on` |
 | Ver logs | `docker logs influxdb`<br>`docker logs grafana` | `docker-compose logs -f` |
@@ -17,7 +17,7 @@ Este directorio contiene un **ejemplo completo** de cómo usar Docker Compose pa
 
 ```
 ┌─────────────────┐
-│  Telemetry Agent│  (Python - scripts/agent/cliente_mqtt.py)
+│  Telemetry Agent│  (Python - services/agent/cliente_mqtt.py)
 │   (Raspberry Pi)│
 └────────┬────────┘
          │ MQTT
@@ -78,7 +78,7 @@ GRAFANA_ADMIN_PASSWORD=secure_password
 
 El archivo `docker-compose.yml` monta la configuración desde:
 ```
-../../scripts/telegraf/telegraf.conf
+../telegraf/telegraf.conf
 ```
 
 **Importante**: Asegúrate de que este archivo existe y está configurado correctamente. Debe incluir:
@@ -192,7 +192,7 @@ docker-compose down -v  # ⚠️ CUIDADO: Elimina todos los datos
 ```bash
 # En otra terminal
 cd ../../  # Volver a la raíz del proyecto
-python scripts/agent/cliente_mqtt.py
+python services/agent/cliente_mqtt.py
 ```
 
 ### 2. Verificar que Telegraf Recibe Datos
@@ -296,7 +296,7 @@ Este ejemplo es **standalone** y no modifica tu configuración actual. Las difer
 
 | Aspecto | Implementación Actual | Este Ejemplo |
 |---------|----------------------|--------------|
-| Ubicación | `scripts/influxdb/` y `scripts/grafana/` | `examples/docker-unified/` |
+| Ubicación | `services/influxdb/` y `services/grafana/` | `examples/docker-unified/` |
 | Red | `monitoring` (externa) | `docker-unified_monitoring` (interna) |
 | Telegraf | No incluido en docker-compose | Incluido en el stack |
 | Variables | `.env` en raíz | `.env` en este directorio |

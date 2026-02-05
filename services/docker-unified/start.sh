@@ -70,7 +70,7 @@ else
 fi
 
 # Verificar configuración de Telegraf
-TELEGRAF_CONF="../../scripts/telegraf/telegraf.conf"
+TELEGRAF_CONF="../telegraf/telegraf.conf"
 if [ ! -f "$TELEGRAF_CONF" ]; then
     echo -e "${YELLOW}⚠ Advertencia: Configuración de Telegraf no encontrada en:${NC}"
     echo "  $TELEGRAF_CONF"

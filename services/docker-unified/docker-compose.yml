@@ -65,7 +65,7 @@ services:
       - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
     volumes:
       # Montar configuración de Telegraf (ajustar ruta según tu proyecto)
-      - ../../scripts/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
+      - ../telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro
     networks:
       - monitoring
     # Telegraf no expone puertos por defecto (solo consume datos)
@@ -93,7 +93,7 @@ services:
     volumes:
       - grafana_data:/var/lib/grafana
       # Provisioning automático de datasources y dashboards
-      - ../../scripts/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ../grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
       - monitoring
     healthcheck:

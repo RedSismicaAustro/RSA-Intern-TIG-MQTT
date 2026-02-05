@@ -9,7 +9,7 @@ Este documento compara las dos aproximaciones para desplegar el stack TIG en tu 
 ```
 Proyecto RSA-Intern-TIG-MQTT/
 │
-├── scripts/
+├── services/
 │   ├── influxdb/
 │   │   └── docker-compose.yml ──┐
 │   │       services:            │  Red externa "monitoring"
@@ -35,7 +35,7 @@ Proyecto RSA-Intern-TIG-MQTT/
 docker network create monitoring
 
 # Paso 2: Iniciar InfluxDB
-cd scripts/influxdb
+cd services/influxdb
 docker-compose up -d
 
 # Paso 3: Iniciar Grafana
@@ -120,19 +120,19 @@ cd RSA-Intern-TIG-MQTT
 docker network create monitoring
 
 # Terminal 2
-cd scripts/influxdb
+cd services/influxdb
 docker-compose up -d
 # Esperar 30 segundos para que InfluxDB esté listo
 
 # Terminal 3
-cd scripts/grafana
+cd services/grafana
 docker-compose up -d
 
 # Terminal 4 - Telegraf (configuración manual)
 docker run -d \
   --name telegraf \
   --network monitoring \
-  -v $(pwd)/scripts/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro \
+  -v $(pwd)/services/telegraf/telegraf.conf:/etc/telegraf/telegraf.conf:ro \
   -e MQTT_BROKER=$MQTT_BROKER \
   -e MQTT_USERNAME=$MQTT_USERNAME \
   -e MQTT_PASSWORD=$MQTT_PASSWORD \
@@ -174,7 +174,7 @@ docker-compose logs -f
 **Separado:**
 ```bash
 # Editar configuración
-nano scripts/telegraf/telegraf.conf
+nano services/telegraf/telegraf.conf
 
 # Encontrar nombre del contenedor
 docker ps | grep telegraf
@@ -189,7 +189,7 @@ docker logs -f telegraf
 **Unificado:**
 ```bash
 # Editar configuración
-nano scripts/telegraf/telegraf.conf
+nano services/telegraf/telegraf.conf
 
 # Reiniciar desde docker-compose
 cd examples/docker-unified
@@ -252,7 +252,7 @@ docker-compose restart telegraf && docker-compose logs -f telegraf
 
 **Separado:**
 ```bash
-cd scripts/grafana
+cd services/grafana
 nano docker-compose.yml  # Cambiar versión de imagen
 
 docker-compose down
@@ -282,7 +282,7 @@ docker-compose up -d --force-recreate grafana
 
 **Separado:**
 ```bash
-cd scripts/influxdb
+cd services/influxdb
 docker-compose down -v
 
 cd ../grafana
@@ -345,13 +345,13 @@ Para migrar tu proyecto de separado a unificado:
 # 1. Copiar docker-compose.yml unificado a la raíz
 cp examples/docker-unified/docker-compose.yml .
 
-# 2. Actualizar rutas de volúmenes (ya no son relativos desde scripts/)
+# 2. Actualizar rutas de volúmenes (ya no son relativos desde services/)
 nano docker-compose.yml
-# Cambiar: ../../scripts/telegraf/telegraf.conf
-# Por:     ./scripts/telegraf/telegraf.conf
+# Cambiar: ../../services/telegraf/telegraf.conf
+# Por:     ./services/telegraf/telegraf.conf
 
 # 3. Detener servicios actuales
-cd scripts/influxdb && docker-compose down
+cd services/influxdb && docker-compose down
 cd ../grafana && docker-compose down
 docker stop telegraf 2>/dev/null || true
 
@@ -360,8 +360,8 @@ cd ../..  # Volver a raíz
 docker-compose up -d
 
 # 5. (Opcional) Eliminar docker-compose antiguos
-# rm scripts/influxdb/docker-compose.yml
-# rm scripts/grafana/docker-compose.yml
+# rm services/influxdb/docker-compose.yml
+# rm services/grafana/docker-compose.yml
 ```
 
 **Nota**: Mantén backups de tus configuraciones antes de migrar.
