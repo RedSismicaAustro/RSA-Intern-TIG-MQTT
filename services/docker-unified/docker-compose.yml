@@ -88,6 +88,10 @@ services:
       # Deshabilitar telemetría (opcional)
       - GF_ANALYTICS_REPORTING_ENABLED=false
       - GF_ANALYTICS_CHECK_FOR_UPDATES=false
+      # Variables para Provisioning de InfluxDB
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
     volumes:
       - /home/rsa/data/grafana:/var/lib/grafana
       # Provisioning automático de datasources y dashboards
