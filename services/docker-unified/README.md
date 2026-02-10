@@ -46,17 +46,35 @@ Este directorio contiene un **ejemplo completo** de cómo usar Docker Compose pa
 └─────────────────┘  - Usuario: admin
 ```
 
-## Configuración
 
-### 1. Variables de Entorno
+### 1. Variables de Entorno y Seguridad
 
-Copia el archivo de ejemplo y edítalo con tus credenciales:
+El stack utiliza un archivo `.env` para centralizar credenciales y evitar datos sensibles "hardcodeados" en archivos de configuración.
 
 ```bash
 cd services/docker-unified
 cp .env.example .env
-nano .env  # o vim, code, etc.
+nano .env
 ```
+
+**Beneficio**: El archivo `telegraf.conf` ahora usa variables como `${INFLUXDB_TOKEN}`, lo que permite subirlo a git sin exponer secretos.
+
+### 2. Persistencia de Datos
+
+El stack utiliza **bind mounts** para asegurar que los datos no se pierdan al reiniciar contenedores. Los datos se guardan en el host en:
+
+- **InfluxDB**: `/home/rsa/data/influxdb/data`
+- **Grafana**: `/home/rsa/data/grafana`
+
+> [!NOTE]
+> Asegúrate de que el usuario tiene permisos de escritura en `/home/rsa/data/`.
+
+### 3. Provisioning Automático
+
+Grafana está configurado para **conectarse automáticamente** a InfluxDB al arrancar mediante el sistema de provisioning.
+
+- **Data Source**: Configurado en `services/grafana/provisioning/datasources/influxdb.yml`.
+- **Dashboards**: Los archivos JSON colocados en `services/grafana/provisioning/dashboards/` se cargan automáticamente al iniciar.
 
 Configura las siguientes variables clave:
 
@@ -218,16 +236,25 @@ from(bucket: "telemetry")
   |> filter(fn: (r) => r["_measurement"] == "mqtt_consumer")
 ```
 
-### 4. Crear Dashboard en Grafana
+### 4. Guía para Dashboards Personalizados
 
-1. Accede a http://localhost:3000
-2. Añadir datasource: Configuration → Data Sources → Add data source → InfluxDB
-   - Query Language: Flux
-   - URL: `http://influxdb:8086`
-   - Organization: valor de `INFLUXDB_ORG`
-   - Token: valor de `INFLUXDB_TOKEN`
-   - Default bucket: valor de `INFLUXDB_BUCKET`
-3. Crear dashboard con paneles para: temperatura CPU, disco libre, uptime, etc.
+Si creas un dashboard manualmente en la UI de Grafana y quieres que sea permanente y parte del repositorio:
+
+1. **Exportar JSON**: En el dashboard, haz clic en **Share** -> **Export** -> **Save to file**.
+2. **Persistir**: Mueve el archivo descargado a `services/grafana/provisioning/dashboards/` dentro del servidor.
+3. **Control de Versiones**: Agrega el archivo a git para que otros puedan usarlo.
+
+#### Consulta Flux sugerida (Panel Stat)
+Para el estado "Online/Offline" que no se actualiza frecuentemente, usa un rango amplio para no perder el último estado:
+
+```flux
+from(bucket: "telemetry")
+  |> range(start: -30d) // Busca en los últimos 30 días
+  |> filter(fn: (r) => r._measurement == "mqtt_consumer")
+  |> filter(fn: (r) => r.topic == "rsa/seismic/smart/DEV00/telemetry/state")
+  |> filter(fn: (r) => r._field == "status")
+  |> last()
+```
 
 ## Troubleshooting
 
