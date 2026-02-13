@@ -80,7 +80,7 @@
           "calcs": [
             "lastNotNull"
           ],
-          "fields": "/^status \\{host=\"2e5d7d9f0d87\", topic=\"rsa/seismic/smart/DEV00/telemetry/state\"\\}$/",
+          "fields": "",
           "values": false
         },
         "showPercentChange": false,
@@ -94,11 +94,11 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -30d) \r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/DEV00/telemetry/state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -30d) \r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r.data_type == \"state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\", \"data_type\", \"_measurement\", \"_start\", \"_stop\"])",
           "refId": "A"
         }
       ],
-      "title": "Estado DEV00",
+      "title": "Estado ${station}",
       "type": "stat"
     },
     {
@@ -161,7 +161,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/DEV00/telemetry/health\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r.data_type == \"health\")\r\n  |> filter(fn: (r) => r._field == \"uptime_s\")\r\n  |> last()\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\", \"data_type\", \"_measurement\", \"_start\", \"_stop\"])",
           "refId": "A"
         }
       ],
@@ -228,7 +228,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/DEV00/telemetry/health\")\r\n  |> filter(fn: (r) => r._field == \"disk_percent\")\r\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r.data_type == \"health\")\r\n  |> filter(fn: (r) => r._field == \"disk_percent\")\r\n  |> last()\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\", \"data_type\", \"_measurement\", \"_start\", \"_stop\"])",
           "refId": "A"
         }
       ],
@@ -295,7 +295,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/DEV00/telemetry/health\")\r\n  |> filter(fn: (r) => r._field == \"ram_available_mb\")\r\n  |> last()",
+          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r.data_type == \"health\")\r\n  |> filter(fn: (r) => r._field == \"ram_available_mb\")\r\n  |> last()\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\", \"data_type\", \"_measurement\", \"_start\", \"_stop\"])",
           "refId": "A"
         }
       ],
@@ -407,11 +407,11 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/DEV00/telemetry/health\")\r\n  |> filter(fn: (r) => r._field == \"cpu_temp_c\")\r\n  |",
+          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r.data_type == \"health\")\r\n  |> filter(fn: (r) => r._field == \"cpu_temp_c\")\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\", \"data_type\", \"_measurement\", \"_start\", \"_stop\"])",
           "refId": "A"
         }
       ],
-      "title": "Temperatura DEV00",
+      "title": "Temperatura ${station}",
       "type": "timeseries"
     },
     {
@@ -477,7 +477,7 @@
             "type": "influxdb",
             "uid": "P951FEA4DE68E13C5"
           },
-          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.topic == \"rsa/seismic/smart/DEV00/telemetry/health\")\r\n  |> filter(fn: (r) => r._field == \"throttled\")\r\n  |> sort(columns: [\"_time\"], desc: true)",
+          "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"mqtt_consumer\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r.data_type == \"health\")\r\n  |> filter(fn: (r) => r._field == \"throttled\")\r\n  |> sort(columns: [\"_time\"], desc: true)",
           "refId": "A"
         }
       ],
@@ -489,7 +489,31 @@
   "schemaVersion": 39,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "influxdb",
+          "uid": "P951FEA4DE68E13C5"
+        },
+        "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"telemetry\", tag: \"station_id\")",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Estación",
+        "multi": false,
+        "name": "station",
+        "options": [],
+        "query": {
+          "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"telemetry\", tag: \"station_id\")",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-12h",
