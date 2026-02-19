@@ -1,6 +1,6 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to agents when working with code in this repository.
 
 ## Project Overview
 
@@ -322,6 +322,6 @@ python services/agent/cliente_mqtt.py
 **Autor:** Martin Bravo
 **Supervisor:** Milton Muñoz
 **Institución:** Red Sísmica del Austro (RSA) — Universidad de Cuenca
-**Periodo:** Octubre 2025 - Presente
+**Periodo:** Octubre 2025 - Enero 2026
 **Last Updated**: February 05, 2026
 **Project Status**: 100% complete - DELIVERED

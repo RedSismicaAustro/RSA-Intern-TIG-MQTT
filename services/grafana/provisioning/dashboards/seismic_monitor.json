@@ -1,0 +1,166 @@
+{
+    "annotations": {
+        "list": [
+            {
+                "builtIn": 1,
+                "datasource": {
+                    "type": "grafana",
+                    "uid": "-- Grafana --"
+                },
+                "enable": true,
+                "hide": true,
+                "iconColor": "rgba(0, 211, 255, 1)",
+                "name": "Annotations & Alerts",
+                "type": "dashboard"
+            }
+        ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "id": 7,
+    "links": [],
+    "panels": [
+        {
+            "datasource": {
+                "default": false,
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "applyToRow": true,
+                            "mode": "gradient",
+                            "type": "color-background",
+                            "wrapText": true
+                        },
+                        "filterable": false,
+                        "inspect": true
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 80
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Status"
+                        },
+                        "properties": [
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "options": {
+                                            "offline": {
+                                                "color": "dark-red",
+                                                "index": 1
+                                            },
+                                            "online": {
+                                                "color": "green",
+                                                "index": 0
+                                            }
+                                        },
+                                        "type": "value"
+                                    }
+                                ]
+                            },
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "targetBlank": false,
+                                        "title": "Ver detalle",
+                                        "url": "/d/ffcrjb8bumy2ob2/health?from=now-2d&to=now&refresh=5s&var-station=${__data.fields[\"Estación\"]}"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 6,
+                "w": 24,
+                "x": 0,
+                "y": 0
+            },
+            "id": 8,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "enablePagination": false,
+                    "fields": "",
+                    "reducer": [
+                        "sum"
+                    ],
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": []
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\")\r\n  // Eliminamos el filtro de estación específica para verlas todas\r\n  |> filter(fn: (r) => r.data_type == \"state\")   \r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()\r\n  // CRÍTICO: 'group()' vacío fusiona las tablas individuales de cada estación en una sola lista\r\n  |> group() \r\n  // Seleccionamos solo las columnas que queremos ver\r\n  |> keep(columns: [\"station_id\", \"_value\"]) \r\n  // Opcional: Renombrar para que se vea bonito en la tabla\r\n  |> rename(columns: {station_id: \"Estación\", _value: \"Status\"})",
+                    "refId": "A"
+                }
+            ],
+            "title": "Acelerografos",
+            "transformations": [
+                {
+                    "id": "organize",
+                    "options": {
+                        "excludeByName": {},
+                        "includeByName": {},
+                        "indexByName": {
+                            "Estación": 0,
+                            "Estado Actual": 1
+                        },
+                        "renameByName": {}
+                    }
+                }
+            ],
+            "type": "table"
+        }
+    ],
+    "refresh": "5s",
+    "schemaVersion": 39,
+    "tags": [],
+    "templating": {
+        "list": []
+    },
+    "time": {
+        "from": "2026-02-19T04:01:27.861Z",
+        "to": "2026-02-19T16:01:27.861Z"
+    },
+    "timepicker": {},
+    "timezone": "browser",
+    "title": "SeismicMonitor",
+    "uid": "ffcrjb8bumy2ob",
+    "version": 22,
+    "weekStart": ""
+}
