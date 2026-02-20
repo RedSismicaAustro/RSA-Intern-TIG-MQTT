@@ -18,7 +18,7 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 7,
+    "id": 11,
     "links": [],
     "panels": [
         {
@@ -98,7 +98,7 @@
                 ]
             },
             "gridPos": {
-                "h": 6,
+                "h": 10,
                 "w": 24,
                 "x": 0,
                 "y": 0
@@ -161,6 +161,6 @@
     "timezone": "browser",
     "title": "SeismicMonitor",
     "uid": "ffcrjb8bumy2ob",
-    "version": 22,
+    "version": 2,
     "weekStart": ""
 }

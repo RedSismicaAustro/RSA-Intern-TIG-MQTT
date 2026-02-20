@@ -6,21 +6,21 @@ This file provides guidance to agents when working with code in this repository.
 
 Real-time monitoring dashboard for the **Red Sísmica del Austro (RSA)** seismic network. This system uses the **TIG stack (Telegraf, InfluxDB, Grafana)** with **MQTT integration** to collect, store, and visualize telemetry metrics from distributed accelerograph stations.
 
-**Project Status**: 100% complete - DELIVERED. Core components (telemetry agent, Docker services, Telegraf config) are implemented, tested, and validated. The system has been entregado end-to-end with production-ready dashboards and unified deployment.
+**Project Status**: 100% complete — DELIVERED. Core components (telemetry agent, multi-station simulator, Docker services, Telegraf config, Grafana provisioning) are implemented, tested, and validated. The system has been delivered end-to-end with production-ready dashboards and unified deployment.
 
 ## Architecture
 
 ### Data Flow
 ```
-Telemetry Agent (Python on Raspberry Pi)
+Telemetry Agent / Station Simulator (Python)
         ↓ MQTT
 Mosquitto Broker (RSA)
         ↓
-Telegraf (mqtt_consumer in Docker)
+Telegraf (mqtt_consumer + topic_parsing in Docker)
         ↓
-InfluxDB (time-series DB, 90-day retention)
+InfluxDB 2.7 (time-series DB, 90-day retention)
         ↓
-Grafana (dashboards & alerts)
+Grafana 11.2.0 (Hub + Detail dashboards & alerts)
 ```
 
 ### MQTT Topic Structure (Implemented)
@@ -33,10 +33,11 @@ rsa/seismic/smart/<station_id>/telemetry/health     # CPU temp, disk, uptime
 rsa/seismic/smart/<station_id>/telemetry/heartbeat  # Last event timestamp
 rsa/seismic/smart/<station_id>/events/detected      # Seismic event notifications
 rsa/seismic/smart/<station_id>/events/data          # Seismic event details
-telemetry/<station_id>/data                         # Legacy format (deprecated)
 ```
 
-**Topic configuration (QoS, retain):** [config/configuracion_mqtt.json](config/configuracion_mqtt.json)
+**Topic configuration (QoS, retain):** [configuracion_mqtt.json](config/configuracion_mqtt.json)
+
+**Topic parsing**: Telegraf extracts `station_id` and `data_type` as indexed tags from the topic hierarchy, enabling per-station filtering in dashboards.
 
 ### Telemetry Metrics (Implemented)
 
@@ -66,14 +67,25 @@ telemetry/<station_id>/data                         # Legacy format (deprecated)
 - **High temperature**: `temp_cpu` > 60°C
 - **Low disk space**: `disk_free_gb` < 1 GB
 
+### Dashboard Architecture (Hub + Detail)
+
+Grafana uses a two-dashboard approach with automatic provisioning:
+
+- **seismic_monitor.json** (Hub): Vista general de todas las estaciones con enlaces de navegación
+- **health.json** (Detail): Vista técnica detallada por estación — CPU, RAM, disco, historial
+- Queries use Flux with InfluxDB Tags and aggregation functions
+- Dynamic `${station}` template variable for per-station filtering
+
 ## Current State
 
-**Project Status: 100% Complete - DELIVERED** ✓ Core components functional and integrated
+**Project Status: 100% Complete — DELIVERED** ✓
+
+**Git Branch**: `rev-milton` (latest reviewed branch)
 
 ### ✅ Implemented (Functional)
 
 **Telemetry Agent:**
-- [services/agent/cliente_mqtt.py](services/agent/cliente_mqtt.py): Full telemetry agent (10 KB)
+- [services/agent/cliente_mqtt.py](services/agent/cliente_mqtt.py): Single-station telemetry agent (10 KB)
   - MQTT connection with authentication via environment variables
   - Last Will Testament (LWT) for disconnect detection
   - Multi-metric publishing: state, health, heartbeat, events
@@ -83,42 +95,50 @@ telemetry/<station_id>/data                         # Legacy format (deprecated)
   - File logging
   - Seismic event simulation (10% probability)
 
-**Docker Infrastructure:**
-- [services/influxdb/docker-compose.yml](services/influxdb/docker-compose.yml): InfluxDB 2.7 service
-  - Auto-initialization with admin user/org/bucket
-  - Persistent volume (`influxdb_data`)
-  - Environment-based configuration
-  - Port 8086 exposed
-- [services/grafana/docker-compose.yml](services/grafana/docker-compose.yml): Grafana 11.2.0 service
-  - Admin credentials via `.env`
-  - Timezone: America/Guayaquil
-  - Provisioning folders prepared
-  - Port 3000 exposed
+**Multi-Station Simulator:**
+- [services/agent/simulacion_estaciones.py](services/agent/simulacion_estaciones.py): Multi-station simulation agent (9.7 KB)
+  - Generates NOM00–NOM09 station configs dynamically
+  - Per-station MQTT threads with independent logging
+  - Failure simulation profiles: high temperature, low disk, silence, station down
+  - Configurable lists: `ESTACIONES_CAIDAS`, `ESTACIONES_SILENCIO`
+  - Auto-creates per-station config files in `config/`
+
+**Unified Docker Stack:**
+- [docker-compose.yml](docker-compose.yml): Unified stack at project root (909 B)
+  - **InfluxDB 2.7**: Auto-initialization, persistent volume (`influxdb_data`), port 8086
+  - **Telegraf 1.36**: MQTT consumer with `topic_parsing`, mounts config from external path
+  - **Grafana 11.2.0**: Provisioned dashboards & datasources, persistent volume (`grafana-data`), port 3000
+  - Bridge network `monitoring` (self-managed, not external)
+  - All services read credentials from `.env`
+
+**Grafana Provisioning:**
+- [services/grafana/provisioning/dashboards/dashboards.yml](services/grafana/provisioning/dashboards/dashboards.yml): Auto-provisioning config (folder: `RSA - Seismic`)
+- [services/grafana/provisioning/dashboards/seismic_monitor.json](services/grafana/provisioning/dashboards/seismic_monitor.json): Hub dashboard — multi-station overview
+- [services/grafana/provisioning/dashboards/health.json](services/grafana/provisioning/dashboards/health.json): Detail dashboard — per-station health
+- [services/grafana/provisioning/datasources/influxdb.yml](services/grafana/provisioning/datasources/influxdb.yml): InfluxDB datasource auto-provisioning (Flux query language)
 
 **Telegraf Configuration:**
-- [services/telegraf/telegraf.conf.example](services/telegraf/telegraf.conf.example): MQTT consumer configured
-  - Input: `mqtt_consumer` for all topic types
-  - Output: `influxdb_v2` (partially configured)
-  - Environment variable integration
+- [services/telegraf/telegraf.conf](services/telegraf/telegraf.conf): Production Telegraf config with MQTT consumer
+- [services/telegraf/telegraf.conf.example](services/telegraf/telegraf.conf.example): Reference config
+- [services/telegraf/docker-compose.yml](services/telegraf/docker-compose.yml): Standalone Telegraf service (external `monitoring` network)
+  - Input: `mqtt_consumer` with `topic_parsing` for `station_id` and `data_type` tags
+  - Output: `influxdb_v2` with environment variable integration
 
-**Configuration:**
-- [config/configuracion_mqtt.json](config/configuracion_mqtt.json): MQTT topic structure
-  - Hierarchical namespace: `org/app/capability/id`
-  - QoS and retain settings per topic type
-- [.env.example](.env.example): Environment variable template
-  - MQTT credentials
-  - InfluxDB admin/org/bucket/retention
-  - All secrets externalized
+**Per-Station Configuration (10 stations):**
+- [config/configuracion_mqtt.json](config/configuracion_mqtt.json): Base MQTT topic structure (QoS, retain settings)
+- `config/configuracion_mqtt_NOM00.json` ... `config/configuracion_mqtt_NOM09.json`: Per-station MQTT configs
+- `config/configuracion_dispositivo_NOM00.json` ... `config/configuracion_dispositivo_NOM09.json`: Per-station device configs
 
-**Documentation & Dashboards:**
-- [docs/](docs/): screenshots showing the system working end-to-end ✓
-- [services/grafana/provisioning/dashboards/](services/grafana/provisioning/dashboards/): Exported JSON dashboards for automatic provisioning ✓
-- [docker-compose.yml](docker-compose.yml): Unified stack configuration ✓
+**Legacy/Individual Service Configs:**
+- [services/influxdb/docker-compose.yml](services/influxdb/docker-compose.yml): Standalone InfluxDB service
+- [services/grafana/docker-compose.yml](services/grafana/docker-compose.yml): Standalone Grafana service
 
-- Unified `docker-compose.yml` at project root
-- Grafana dashboard JSON exports in provisioning folder
-- Multi-metric telemetry agent
-- Hierarchical MQTT topic structure
+**Alternative Unified Deployment:**
+- [services/docker-unified/](services/docker-unified/): Complete alternative deployment with its own `docker-compose.yml`, `start.sh`, `.env.example`, `COMPARISON.md`, and `README.md`
+
+**Documentation & Evidence:**
+- [docs/](docs/): 27 screenshots + 2 dashboard JSON exports demonstrating end-to-end operation
+- [README.md](README.md): Project documentation with architecture and deployment guide
 
 ## Configuration Files
 
@@ -126,15 +146,15 @@ Located in [config/](config/):
 - `configuracion_mqtt.json`: MQTT broker connection settings
   - `serverAddress`: Broker IP/hostname
   - `username`, `password`: Authentication
-  - `topicStatus`: Status topic (e.g., "status")
-- `configuracion_dispositivo.json`: Station device configuration
+  - `topicStatus`: Status topic
+- `configuracion_dispositivo_NOMxx.json`: Per-station device configuration
   - `dispositivo.id`: Station ID (e.g., "NOM00")
   - `dispositivo.modo_adquisicion`: "online" or "offline"
 
 ## Development Setup
 
 ### Prerequisites
-- **Docker & Docker Compose**: For running TIG stack
+- **Docker & Docker Compose v2**: For running TIG stack
 - **Micromamba** (or conda/mamba): For Python environment
 - **MQTT Broker**: Mosquitto or other (can be local or remote)
 
@@ -142,7 +162,7 @@ Located in [config/](config/):
 
 **1. Clone and configure**:
 ```bash
-cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
+cd /path/to/RSA-Intern-TIG-MQTT
 
 # Copy environment template
 cp .env.example .env
@@ -158,27 +178,21 @@ micromamba activate tig-mqtt
 micromamba install -c conda-forge paho-mqtt python-dotenv -y
 ```
 
-**3. Create Docker network**:
+**3. Start the unified stack**:
 ```bash
-docker network create monitoring
+docker compose up -d
 ```
 
-**4. Start InfluxDB**:
-```bash
-cd services/influxdb
-docker-compose up -d
-```
+The unified `docker-compose.yml` creates the `monitoring` bridge network automatically (no need for `docker network create`).
 
-**5. Start Grafana**:
+**4. Run telemetry agent** (single station):
 ```bash
-cd ../grafana
-docker-compose up -d
-```
-
-**6. Run telemetry agent**:
-```bash
-cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
 python services/agent/cliente_mqtt.py
+```
+
+**5. Run multi-station simulator** (10 stations):
+```bash
+python services/agent/simulacion_estaciones.py
 ```
 
 **Access services**:
@@ -192,14 +206,17 @@ python services/agent/cliente_mqtt.py
 - Test broker connectivity: `telnet <broker> 1883`
 
 **Docker containers fail to start**:
-- Verify Docker network exists: `docker network ls | grep monitoring`
-- Check logs: `docker-compose logs -f`
+- Check logs: `docker compose logs -f`
 - Ensure ports 8086 and 3000 are not in use
 
 **No data in InfluxDB**:
-- Verify Telegraf is running (currently needs manual setup)
+- Verify Telegraf is running: `docker compose logs telegraf`
 - Check MQTT topics match agent configuration
 - Inspect InfluxDB bucket: http://localhost:8086 → Data Explorer
+
+**Telegraf not parsing station IDs**:
+- Verify `topic_parsing` is configured in `telegraf.conf`
+- Tags `station_id` and `data_type` should appear in InfluxDB measurements
 
 ## Related Projects
 
@@ -212,116 +229,90 @@ This monitoring system consumes telemetry from the **RSA-Acelerografo** project:
 
 ```
 RSA-Intern-TIG-MQTT/
-├── .env.example                    # Environment variables template
-├── .gitignore                      # Excludes .env, logs, local configs
-├── CLAUDE.md                       # This file
-├── README.md                       # Project documentation
+├── .env.example                          # Environment variables template
+├── .gitignore                            # Excludes .env, logs, local configs
+├── AGENTS.md                             # This file
+├── README.md                             # Project documentation
+├── docker-compose.yml                    # Unified TIG stack (production)
 │
 ├── config/
-│   ├── configuracion_mqtt.json    # MQTT topic structure & QoS settings ✓
-│   └── configuracion_dispositivo.json  # (gitignored, needs .example)
+│   ├── configuracion_mqtt.json           # Base MQTT topic structure ✓
+│   ├── configuracion_mqtt_NOM00..09.json # Per-station MQTT configs (×10) ✓
+│   └── configuracion_dispositivo_NOM00..09.json  # Per-station device configs (×10) ✓
 │
 ├── services/
 │   ├── agent/
-│   │   └── cliente_mqtt.py        # Telemetry agent (10 KB, COMPLETE) ✓
+│   │   ├── cliente_mqtt.py               # Single-station telemetry agent ✓
+│   │   └── simulacion_estaciones.py      # Multi-station simulator ✓
 │   ├── telegraf/
-│   │   ├── telegraf.conf          # Integrated Telegraf config ✓
-│   │   └── telegraf.conf.example  # Reference config ✓
+│   │   ├── docker-compose.yml            # Standalone Telegraf service
+│   │   ├── telegraf.conf                 # Production config (topic_parsing) ✓
+│   │   └── telegraf.conf.example         # Reference config ✓
 │   ├── influxdb/
-│   │   └── docker-compose.yml     # InfluxDB 2.7 service ✓
-│   └── grafana/
-│       ├── docker-compose.yml     # Grafana 11.2.0 service ✓
-│       └── provisioning/
-│           └── dashboards/        # Dashboard JSON files ✓
+│   │   ├── docker-compose.yml            # Standalone InfluxDB service ✓
+│   │   └── influxdb.conf.example         # InfluxDB reference config
+│   ├── grafana/
+│   │   ├── docker-compose.yml            # Standalone Grafana service ✓
+│   │   └── provisioning/
+│   │       ├── dashboards/
+│   │       │   ├── dashboards.yml        # Provisioning config ✓
+│   │       │   ├── seismic_monitor.json  # Hub: multi-station overview ✓
+│   │       │   └── health.json           # Detail: per-station health ✓
+│   │       └── datasources/
+│   │           └── influxdb.yml          # InfluxDB datasource provisioning ✓
+│   └── docker-unified/                   # Alternative unified deployment
+│       ├── docker-compose.yml
+│       ├── start.sh
+│       ├── .env.example
+│       ├── COMPARISON.md
+│       └── README.md
 │
 ├── examples/
-│   └── docker-unified/            # Example of Docker Compose unificado ✓
+│   ├── mqtt/                             # MQTT examples (empty)
+│   └── mseed/
+│       ├── extract_segment.py            # MiniSEED segment extraction utility
+│       └── data/                         # Sample data
 │
-├── docs/                           # 12 screenshots of working system ✓
-│   ├── Dashboard.json             # Dashboard source
-│   ├── dashboard_varias_estaciones.json
-│   └── ...
+├── docs/                                 # 27 screenshots + 2 dashboard JSONs
 │
 └── env/
-    └── mseed_py39.lock             # Micromamba lock file
+    └── mseed_py39.lock                   # Micromamba lock file
 ```
 
-**Key files:**
-- ✓ = Implemented and functional
-- Blank = Not yet implemented
-
-### Finalized State
-The project has been completed and delivered. All core modules are operational.
+**Key:** ✓ = Implemented and functional
 
 ## Important Notes
 
-### System Already Validated ✓
-The 12 screenshots in [docs/](docs/) demonstrate that the complete TIG+MQTT integration has been tested successfully:
-- Telegraf consuming MQTT messages in real-time
-- InfluxDB storing time-series data in the "rsa" bucket
-- Grafana visualizing metrics with live dashboards
-- All components communicating correctly
+### Unified vs Individual Docker Compose
+The project contains **two deployment approaches**:
+1. **Unified** (recommended): Root `docker-compose.yml` — runs all services together with a self-managed bridge network
+2. **Individual**: Separate `docker-compose.yml` in `services/influxdb/`, `services/grafana/`, `services/telegraf/` — require an external `monitoring` network (`docker network create monitoring`)
 
-**Status**: Proof of concept is functional. Next phase is production hardening.
+### Telegraf External Mount
+The unified `docker-compose.yml` mounts Telegraf config from `../../telegraf-1.36.3/etc/telegraf` (outside the repo). Ensure the Telegraf binary distribution is extracted at the expected sibling path.
 
-### Docker Network Requirements
-Both docker-compose files use external network `monitoring`:
-```yaml
-networks:
-  monitoring:
-    external: true
-```
-
-**Before starting services**, create the network:
-```bash
-docker network create monitoring
-```
+### System Validated ✓
+Screenshots in [docs/](docs/) demonstrate the complete TIG+MQTT integration:
+- Telegraf consuming MQTT messages with topic parsing
+- InfluxDB storing time-series data with station tags
+- Grafana Hub + Detail dashboards with per-station filtering
+- Alert conditions (temperature, disk, silence, station down)
 
 ### MQTT Topic Evolution
-The implemented topic structure is more advanced than the original specification:
 - **Original**: `rsa/telemetry/<station_id>/{state,env,disk,frames,meta}`
 - **Implemented**: `rsa/seismic/smart/<station_id>/{telemetry,events}/{state,health,heartbeat,detected,data}`
 
-**Benefits**:
-- Clear namespace hierarchy (org/app/capability)
-- Separation of telemetry vs. events
-- Scalable for multiple applications beyond seismic monitoring
-- Follows MQTT best practices
-
 ### Configuration Management
-- All secrets moved to `.env` (gitignored for security)
+- All secrets in `.env` (gitignored for security)
 - Use `.env.example` as template
 - Agent reads environment variables via `python-dotenv`
 - Docker services inject variables automatically
-
-### Running the Telemetry Agent
-
-**Prerequisites**:
-```bash
-micromamba create -n tig-mqtt python=3.9 -y
-micromamba activate tig-mqtt
-micromamba install -c conda-forge paho-mqtt python-dotenv -y
-```
-
-**Create `.env` file** with real credentials:
-```bash
-cp .env.example .env
-# Edit .env with your MQTT broker details
-```
-
-**Run agent**:
-```bash
-cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
-python services/agent/cliente_mqtt.py
-```
-
-**Logs** are written to `log-files/` (auto-created on first run)
 
 ## Project Context
 
 **Autor:** Martin Bravo
 **Supervisor:** Milton Muñoz
 **Institución:** Red Sísmica del Austro (RSA) — Universidad de Cuenca
-**Periodo:** Octubre 2025 - Enero 2026
-**Last Updated**: February 05, 2026
-**Project Status**: 100% complete - DELIVERED
+**Periodo:** Octubre 2025 – Enero 2026
+**Last Updated**: February 19, 2026
+**Project Status**: 100% complete — DELIVERED
