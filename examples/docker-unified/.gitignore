@@ -1,5 +1,0 @@
-# Variables de entorno (contienen credenciales)
-.env
-
-# Archivos temporales de Docker
-.docker/
