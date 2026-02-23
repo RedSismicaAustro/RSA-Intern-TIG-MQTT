@@ -1,148 +1,72 @@
-# Dashboard de Monitoreo en Tiempo Real de Estaciones RSA
+# Dashboard de Monitoreo en Tiempo Real — Red Sísmica del Austro
 
 ## Descripción general
 
-Este proyecto implementa un **dashboard de monitoreo en tiempo real** para la **Red Sísmica del Austro (RSA)**, diseñado para supervisar el estado operativo de las estaciones de acelerógrafos distribuidas.
-El sistema está basado en el stack **TIG (Telegraf, InfluxDB, Grafana)** con **integración MQTT**, lo que permite recopilar, almacenar y visualizar métricas de telemetría de manera eficiente.
+Sistema de **monitoreo en tiempo real** para la **Red Sísmica del Austro (RSA)**, diseñado para supervisar el estado operativo de estaciones de acelerógrafos distribuidas. Basado en el stack **TIG (Telegraf, InfluxDB, Grafana)** con **integración MQTT**.
 
-**Estado del Proyecto: 100% completado - ENTREGADO** ✓
-
-El sistema está completamente operativo, documentado y listo para su uso. Se han integrado todos los componentes (agente de telemetría, InfluxDB, Grafana y Telegraf) y se ha validado su funcionamiento de extremo a extremo. Los dashboards han sido entregados y el stack Docker está unificado.
+**Estado del Proyecto: 100% completado — ENTREGADO** ✓
 
 ---
 
-## Componentes del sistema
-
-### 🔹 1. Agente de telemetría ✅ IMPLEMENTADO
-
-**Ubicación:** [`services/agent/cliente_mqtt.py`](services/agent/cliente_mqtt.py)
-
-Agente completo de telemetría ejecutado en estaciones Raspberry Pi. Desarrollado en **Python** con **Paho MQTT**, publica múltiples tipos de métricas hacia el **Broker MQTT** de la RSA.
-
-**Características implementadas:**
-- Conexión MQTT con autenticación mediante variables de entorno
-- Last Will Testament (LWT) para detección de desconexión
-- Publicación de 4 tipos de telemetría:
-  - **State**: Estado online/offline de conexión
-  - **Health**: CPU temp (40-60°C simulado), espacio en disco (1-64 GB), uptime real del sistema
-  - **Heartbeat**: Timestamp del último evento sísmico
-  - **Events**: Simulación de eventos sísmicos (10% probabilidad)
-- Lectura de uptime real desde `/proc/uptime`
-- Manejo automático de reconexiones
-- Sistema de logging a archivos
-
-**Tópicos MQTT publicados:**
-```
-rsa/seismic/smart/<station_id>/telemetry/state
-rsa/seismic/smart/<station_id>/telemetry/health
-rsa/seismic/smart/<station_id>/telemetry/heartbeat
-rsa/seismic/smart/<station_id>/events/detected
-```
-
----
-
-### 🔹 2. Telegraf ⚠️ PARCIALMENTE IMPLEMENTADO
-
-**Ubicación:** [`services/telegraf/telegraf.conf.example`](services/telegraf/telegraf.conf.example)
-
-Agente de recolección ejecutado en contenedor **Docker**, actúa como **mqtt_consumer** suscribiéndose a los tópicos de telemetría.
-
-**Estado actual:**
-- ✅ Configuración de input `mqtt_consumer` completa
-- ✅ Integración con variables de entorno
-- ✅ Configuración de output `influxdb_v2` (parcial)
-- ❌ Falta: docker-compose.yml para el servicio Telegraf
-- ❌ Falta: Configuración completa de token/org en output
-
-**Tópicos suscritos:**
-```
-rsa/seismic/smart/+/telemetry/state
-rsa/seismic/smart/+/telemetry/health
-rsa/seismic/smart/+/telemetry/heartbeat
-rsa/seismic/smart/+/events/detected
-```
-
----
-
-### 🔹 3. InfluxDB ✅ IMPLEMENTADO
-
-**Ubicación:** [`services/influxdb/docker-compose.yml`](services/influxdb/docker-compose.yml)
-
-Base de datos de series temporales donde se almacenan las métricas de todas las estaciones.
-
-**Características implementadas:**
-- InfluxDB 2.7 en contenedor Docker
-- Inicialización automática con usuario admin, organización y bucket
-- Puerto 8086 expuesto
-- Volumen persistente para datos
-- Configuración mediante variables de entorno (`.env`)
-- Política de retención de 90 días (configurable)
-
----
-
-### 🔹 4. Grafana ✅ IMPLEMENTADO
-
-**Ubicación:** [`services/grafana/docker-compose.yml`](services/grafana/docker-compose.yml)
-
-Interfaz de visualización en tiempo real para monitorear todas las estaciones.
-
-**Características implementadas:**
-- Grafana 11.2.0 en contenedor Docker
-- Puerto 3000 expuesto
-- Credenciales admin configurables vía `.env`
-- Zona horaria: America/Guayaquil
-- Carpetas de provisioning preparadas
-- Volumen persistente para dashboards
-
-**Estado:**
-- ✅ Sistema de dashboards entregado y funcional (ver capturas en [`docs/`](docs/))
-- ✅ Provisioning de dashboards preparado en `services/grafana/provisioning/dashboards/`
-- ✅ Dashboards exportados en formato JSON incluidos en el repositorio
-- ✅ Reglas de alertas documentadas y preparas para configuración
-
-**Vistas disponibles:**
-- Vista general de red: grid con estado global de todas las estaciones
-- Vista por estación: métricas detalladas y series temporales
-
----
-
-## Flujo de datos
+## Arquitectura
 
 ```
-Agente de Telemetría (Python)
+Agente de Telemetría (mqtt_coordinator.py en Raspberry Pi)
         ↓ MQTT
 Broker Mosquitto (RSA)
         ↓
-Telegraf (mqtt_consumer)
-        ↓
-InfluxDB (time-series storage)
-        ↓
-Grafana (visualización y alertas)
+┌─────────────────┐
+│    Telegraf      │  mqtt_consumer → influxdb_v2 output
+│  (Container 1)  │  Parsea topics y extrae station_id + data_type
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│    InfluxDB      │  Series temporales · Puerto 8086
+│  (Container 2)  │  Retención: 90 días
+└────────┬────────┘
+         ↓
+┌─────────────────┐
+│    Grafana       │  Dashboards + alertas · Puerto 3000
+│  (Container 3)  │  Provisioning automático
+└─────────────────┘
 ```
 
----
+### Tópicos MQTT
 
-## Esquema de alertas
+```
+rsa/seismic/smart/<station_id>/telemetry/state      # Estado online/offline
+rsa/seismic/smart/<station_id>/telemetry/health     # CPU, disco, RAM, uptime
+rsa/seismic/smart/<station_id>/telemetry/heartbeat  # Último evento sísmico
+rsa/seismic/smart/<station_id>/events/detected      # Notificación de eventos
+rsa/seismic/smart/<station_id>/events/data          # Datos del evento
+```
 
-El sistema genera notificaciones cuando:
+Telegraf extrae `station_id` y `data_type` como tags indexados mediante `topic_parsing`.
 
-* **Caída de estación:** LWT recibido o sin datos > X s
-* **Silencio prolongado:** `last_event_ts` excede umbral
-* **Temperatura alta:** `temp_cpu` > 60 °C
-* **Espacio en disco bajo:** `disk_free_gb` < 1 GB
+### Métricas de salud
 
----
+| Métrica | Descripción | Fuente |
+|---------|-------------|--------|
+| `temp_cpu` | Temperatura CPU (°C) | `/sys/class/thermal/` |
+| `disk_percent` | Uso de disco (%) | `os.statvfs('/')` |
+| `ram_percent` | Uso de RAM (%) | `/proc/meminfo` |
+| `load_avg_15m` | Carga promedio 15 min | `os.getloadavg()` |
+| `uptime_s` | Tiempo activo (s) | `/proc/uptime` |
 
-## Estado de Implementación
+### Alertas
 
-### ✅ Completados
+| Condición | Umbral |
+|-----------|--------|
+| Caída de estación | LWT o sin datos > X s |
+| Temperatura alta | `temp_cpu` > 60°C |
+| Disco alto | `disk_percent` > 90% |
+| RAM alta | `ram_percent` > 85% |
+| Silencio prolongado | `last_event` excede umbral |
 
-* ✅ Script Python del **agente de telemetría** con simulación completa
-* ✅ Configuración de **Telegraf** integrada (`telegraf.conf`)
-* ✅ Stack TIG unificado en la raíz del proyecto (`docker-compose.yml`)
-* ✅ Sistema validado end-to-end con dashboards reales
-* ✅ Exportación de dashboards a JSON y archivos de provisioning preparados
-* ✅ Documentación completa del proyecto para entrega final
+### Dashboards
+
+- **seismic_monitor.json** (Hub): Vista general multi-estación con enlaces de navegación
+- **health.json** (Detalle): Métricas por estación — gauges de CPU, RAM, disco + series temporales
 
 ---
 
@@ -150,172 +74,174 @@ El sistema genera notificaciones cuando:
 
 ```
 RSA-Intern-TIG-MQTT/
-├── .env.example                   # ✅ Plantilla de variables de entorno
-├── .gitignore                     # ✅ Excluye .env, logs, configs locales
-├── CLAUDE.md                      # ✅ Guía para Claude Code
-├── README.md                      # ✅ Este archivo
-│
-├── config/
-│   ├── configuracion_mqtt.json    # ✅ Estructura de tópicos MQTT y QoS
-│   └── configuracion_dispositivo.json  # ⚠️ En .gitignore, falta .example
+├── .gitignore
+├── AGENTS.md                             # Guía para agentes de IA
+├── README.md                             # Este archivo
 │
 ├── services/
-│   ├── agent/
-│   │   └── cliente_mqtt.py        # ✅ Agente de telemetría (COMPLETO)
-│   ├── telegraf/
-│   │   ├── telegraf.conf.example  # ✅ Config Telegraf con mqtt_consumer
-│   │   └── influxdb.conf.example  # ✅ Config básica de output
-│   ├── influxdb/
-│   │   └── docker-compose.yml     # ✅ Servicio InfluxDB 2.7
-│   ├── grafana/
-│   │   └── docker-compose.yml     # ✅ Servicio Grafana 11.2.0
-│   └── docker-unified/            # ✅ Docker Compose unificado
-│       ├── docker-compose.yml     #    Stack TIG completo en un archivo
-│       ├── README.md              #    Documentación del ejemplo
-│       ├── COMPARISON.md          #    Comparación separado vs. unificado
-│       └── start.sh               #    Script de inicio automatizado
-│
-├── examples/                      # ✅ Ejemplos adicionales (legacy)
-│
-├── docs/                          # ✅ 12 capturas de pantalla del sistema
-│   ├── Dashboard.png              #    funcionando end-to-end
-│   ├── bucket_configurado.png
-│   └── ...
-│
-└── env/
-    └── mseed_py39.lock            # ✅ Lock file de micromamba
+│   ├── docker-unified/                   # Stack Docker activo
+│   │   ├── docker-compose.yml            # InfluxDB + Telegraf + Grafana
+│   │   ├── telegraf.conf                 # Config con MQTT consumer + topic_parsing
+│   │   ├── .env.example                  # Plantilla de variables de entorno
+│   │   ├── .gitignore
+│   │   ├── COMPARISON.md                 # Comparación con enfoque separado
+│   │   └── README.md                     # Documentación del stack
+│   │
+│   └── grafana/
+│       └── provisioning/                 # Montado por docker-unified
+│           ├── dashboards/
+│           │   ├── dashboards.yml        # Config de provisioning automático
+│           │   ├── seismic_monitor.json  # Dashboard Hub
+│           │   └── health.json           # Dashboard Detalle
+│           └── datasources/
+│               └── influxdb.yml          # Datasource InfluxDB (Flux)
 ```
-
-**Leyenda:**
-- ✅ = Implementado y funcional
-- ⚠️ = Parcialmente implementado o requiere acción
-- ❌ = No implementado
 
 ---
 
-## Instalación y Uso
+## Instalación y uso
 
-### Inicio Rápido (Método Actual)
+### 1. Configurar credenciales
 
-**1. Configurar variables de entorno:**
 ```bash
-cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
+cd services/docker-unified
 cp .env.example .env
-nano .env  # Editar con credenciales reales
+nano .env
 ```
 
-**2. Crear entorno Python:**
+Variables clave:
 ```bash
-micromamba create -n tig-mqtt python=3.9 -y
-micromamba activate tig-mqtt
-micromamba install -c conda-forge paho-mqtt python-dotenv -y
+MQTT_BROKER=192.168.1.100       # IP del broker Mosquitto
+MQTT_USERNAME=rsa_user
+MQTT_PASSWORD=secure_password
+INFLUXDB_TOKEN=$(openssl rand -hex 32)
+GRAFANA_ADMIN_PASSWORD=secure_password
 ```
 
-**3. Iniciar servicios Docker:**
+### 2. Iniciar el stack
+
 ```bash
-# Crear red Docker
-docker network create monitoring
-
-# Iniciar InfluxDB
-cd services/influxdb
-docker-compose up -d
-
-# Iniciar Grafana
-cd ../grafana
-docker-compose up -d
+docker compose up -d
 ```
 
-**4. Ejecutar agente de telemetría:**
+### 3. Verificar estado
+
 ```bash
-cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT
-python services/agent/cliente_mqtt.py
+docker compose ps
 ```
 
-**5. Acceder a las interfaces:**
-- **InfluxDB UI**: http://localhost:8086
-- **Grafana**: http://localhost:3000
+Salida esperada:
+```
+NAME             STATUS         PORTS
+rsa-influxdb     Up (healthy)   0.0.0.0:8086->8086/tcp
+rsa-telegraf     Up
+rsa-grafana      Up (healthy)   0.0.0.0:3000->3000/tcp
+```
 
-### Método Alternativo: Docker Compose Unificado
+### 4. Acceder a las interfaces
 
-Para una experiencia simplificada con un solo comando, ver el ejemplo completo en:
-[`services/docker-unified/README.md`](services/docker-unified/README.md)
-
----
-
-## Pruebas y validación
-
-**Estado actual:**
-- ✅ Sistema validado end-to-end con pruebas manuales
-- ✅ 12 capturas de pantalla documentando el funcionamiento completo
-- ✅ Agente publicando métricas correctamente vía MQTT
-- ✅ Telegraf consumiendo y transformando datos
-- ✅ InfluxDB almacenando series temporales
-- ✅ Grafana visualizando dashboards en tiempo real
-
-**Pendiente:**
-- ❌ Scripts de simulación de múltiples estaciones (50–100)
-- ❌ Escenarios de prueba: caída de nodo, silencio de datos, alta temperatura, disco lleno
-- ❌ Evaluación de rendimiento: latencia, pérdida de mensajes, uso de CPU/RAM
+| Servicio | URL | Credenciales |
+|----------|-----|--------------|
+| InfluxDB | http://localhost:8086 | `INFLUXDB_ADMIN_USER` / `INFLUXDB_ADMIN_PASSWORD` |
+| Grafana | http://localhost:3000 | `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` |
 
 ---
 
-## Beneficios esperados
+## Operación
 
-* Monitoreo unificado y en tiempo real del estado de la red RSA.
-* Reducción del tiempo de respuesta ante fallos.
-* Conservación de métricas históricas para análisis de rendimiento.
-* Base para futuras integraciones con sistemas de alerta avanzada o detección de eventos sísmicos.
+### Ver logs
+
+```bash
+# Todos los servicios
+docker compose logs -f
+
+# Servicio específico
+docker compose logs -f telegraf
+```
+
+### Reiniciar un servicio
+
+```bash
+# Útil después de cambiar telegraf.conf
+docker compose restart telegraf
+```
+
+### Detener el stack
+
+```bash
+# Detener (mantiene datos)
+docker compose down
+
+# Detener y eliminar datos (⚠️ CUIDADO)
+docker compose down -v
+```
+
+### Persistencia de datos
+
+Los datos se almacenan en bind mounts del host:
+- **InfluxDB**: `/home/rsa/data/influxdb/data`
+- **Grafana**: `/home/rsa/data/grafana`
+
+### Persistir dashboards personalizados
+
+Si creas un dashboard manualmente en Grafana:
+
+1. **Exportar**: Dashboard → Share → Export → Save to file
+2. **Copiar** el JSON a `services/grafana/provisioning/dashboards/`
+3. **Commitear** para que sea parte del repositorio
 
 ---
 
-## Recursos proporcionados
+## Verificación del flujo de datos
 
-* Acceso al **Broker MQTT** de la RSA.
-* Acceso a este repositorio con ejemplos, Dockerfiles y documentación.
-* Instructivos de instalación y configuración del entorno en Ubuntu/WSL.
+### 1. Verificar que Telegraf recibe datos MQTT
 
----
+```bash
+docker compose logs -f telegraf | grep mqtt_consumer
+```
 
-## Arquitectura MQTT Implementada
+### 2. Consultar datos en InfluxDB
 
-El proyecto utiliza una estructura jerárquica de tópicos MQTT más avanzada que la especificación original:
+Accede a http://localhost:8086 → Data Explorer:
+```flux
+from(bucket: "telemetry")
+  |> range(start: -1h)
+  |> filter(fn: (r) => r["_measurement"] == "rsa")
+```
 
-**Formato:** `org/app/capability/station_id/category/subcategory`
+### 3. Suscribirse directamente al broker
 
-**Ventajas:**
-- Namespace jerárquico claro (org/app/capability)
-- Separación entre telemetría y eventos sísmicos
-- Escalable para múltiples aplicaciones más allá del monitoreo sísmico
-- Sigue mejores prácticas de MQTT
-
-**Configuración completa:** [`config/configuracion_mqtt.json`](config/configuracion_mqtt.json)
-
----
-
-## Resumen de Entrega
-
-El proyecto se entrega con todas las funcionalidades core operativas y validadas según los objetivos iniciales del programa de pasantías. La arquitectura implementada permite un escalamiento eficiente y un monitoreo robusto de la red RSA.
+```bash
+mosquitto_sub -h <MQTT_BROKER> -u <USERNAME> -P <PASSWORD> -t "rsa/seismic/smart/#" -v
+```
 
 ---
 
-## Documentación Adicional
+## Troubleshooting
 
-- **[CLAUDE.md](CLAUDE.md)**: Guía completa del proyecto para Claude Code
-- **[services/docker-unified/](services/docker-unified/)**: Ejemplo de Docker Compose unificado
-  - [README.md](services/docker-unified/README.md): Documentación del ejemplo
-  - [COMPARISON.md](services/docker-unified/COMPARISON.md): Comparación de enfoques
-- **[docs/](docs/)**: Capturas de pantalla del sistema funcionando
+| Problema | Solución |
+|----------|----------|
+| Contenedores no inician | `docker compose logs -f` — verificar puertos 8086/3000 |
+| Sin datos en InfluxDB | Verificar que Telegraf recibe MQTT: `docker compose logs telegraf` |
+| Telegraf no parsea station_id | Verificar `topic_parsing` en `telegraf.conf` |
+| Grafana sin datasource | Verificar `services/grafana/provisioning/datasources/influxdb.yml` |
+| Error de red Docker | La red `monitoring` se crea automáticamente con `docker compose up` |
+
+---
+
+## Proyectos relacionados
+
+Este sistema consume telemetría del proyecto **RSA-Acelerografo**:
+- Estaciones Raspberry Pi adquieren datos sísmicos
+- Convierten a formato Mini-SEED y suben a Google Drive
+- El agente MQTT (`mqtt_coordinator.py`) publica métricas de salud y eventos
 
 ---
 
 ## Autoría
 
-Proyecto desarrollado en el marco del programa de pasantías de la
-**Red Sísmica del Austro (RSA) — Universidad de Cuenca**.
-
 **Autor:** Martin Bravo
 **Supervisor:** Milton Muñoz
 **Institución:** Red Sísmica del Austro (RSA) — Universidad de Cuenca
-**Periodo:** Octubre 2025 - Presente
-**Última actualización:** Febrero 05, 2026
-**Estado:** 100% completado - Proyecto Finalizado y Entregado
+**Periodo:** Octubre 2025 – Enero 2026
+**Última actualización:** Febrero 23, 2026
