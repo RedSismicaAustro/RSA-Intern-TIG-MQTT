@@ -1,0 +1,8 @@
+{
+    "name": "rsa-nodered-flows",
+    "description": "Dependencias de Node-RED para el panel de control remoto RSA Seismic Network",
+    "version": "1.0.0",
+    "dependencies": {
+        "node-red-dashboard": "3.x"
+    }
+}

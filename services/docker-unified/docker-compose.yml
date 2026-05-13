@@ -110,7 +110,8 @@ services:
 # ==============================================================================
 networks:
   monitoring:
-    driver: bridge
+    external: true
+    name: rsa_network
     # Esta red permite que todos los servicios se comuniquen entre sí
     # Puedes conectar otros servicios externos usando:
     #   docker network connect monitoring <container_name>

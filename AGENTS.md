@@ -13,14 +13,19 @@ Real-time monitoring dashboard for the **Red Sísmica del Austro (RSA)** seismic
 ### Data Flow
 ```
 Telemetry Agent (mqtt_coordinator.py on Raspberry Pi)
-        ↓ MQTT
-Mosquitto Broker (RSA)
-        ↓
+        ↓ MQTT (telemetry)
+        ↑ MQTT (cmd/extract_event)
+Mosquitto Broker (RSA VPS)
+        ↓ telemetry
+        ↑ commands
 Telegraf (mqtt_consumer + topic_parsing in Docker)
         ↓
 InfluxDB 2.7 (time-series DB, 90-day retention)
         ↓
 Grafana 11.2.0 (Hub + Detail dashboards & alerts)
+
+Node-RED Dashboard → MQTT (extract_event cmd) → Estaciones
+Estaciones         → MQTT (extract_event/res)  → Node-RED Dashboard
 ```
 
 ### MQTT Topic Structure
@@ -28,12 +33,16 @@ Grafana 11.2.0 (Hub + Detail dashboards & alerts)
 **Hierarchical namespace:** `org/app/capability/id/category/subcategory`
 
 ```
-rsa/seismic/smart/<station_id>/telemetry/state      # Connection status
-rsa/seismic/smart/<station_id>/telemetry/health     # CPU temp, disk, RAM, uptime
-rsa/seismic/smart/<station_id>/telemetry/heartbeat  # Last event timestamp
-rsa/seismic/smart/<station_id>/events/detected      # Seismic event notifications
-rsa/seismic/smart/<station_id>/events/data          # Seismic event details
+rsa/seismic/smart/<station_id>/telemetry/state              # Connection status
+rsa/seismic/smart/<station_id>/telemetry/health             # CPU temp, disk, RAM, uptime
+rsa/seismic/smart/<station_id>/telemetry/heartbeat          # Last event timestamp
+rsa/seismic/smart/<station_id>/events/detected              # Seismic event notifications
+rsa/seismic/smart/<station_id>/events/data                  # Seismic event details
+rsa/seismic/smart/<target_id>/cmd/extract_event             # Comando de extracción (→ estaciones)
+rsa/seismic/smart/<station_id>/cmd/extract_event/res        # Respuesta de extracción (← estaciones)
 ```
+
+**Nota:** `<target_id>` puede ser el ID de una estación específica (`DEV00`, `DEV01`, `CHA01`, `CHA02`, `TEN01`) o `broadcast` para enviar a todas las estaciones simultáneamente.
 
 **Topic parsing**: Telegraf extracts `station_id` and `data_type` as indexed tags from the topic hierarchy, enabling per-station filtering in dashboards.
 
@@ -93,6 +102,13 @@ RSA-Intern-TIG-MQTT/
 │   │   ├── .gitignore                    # Excludes .env
 │   │   ├── COMPARISON.md                 # Comparison with individual services approach
 │   │   └── README.md                     # Deployment documentation
+│   │
+│   ├── node-red/                         # ✅ Panel de control remoto
+│   │   ├── docker-compose.yml            # Stack Node-RED (puerto 1880, red rsa_network)
+│   │   ├── flows.json                    # Flujos exportados y versionados en Git
+│   │   ├── package.json                  # Dependencias (node-red-dashboard)
+│   │   ├── .env.example                  # Plantilla de variables de entorno
+│   │   └── .env                          # Credenciales reales (gitignored)
 │   │
 │   └── grafana/
 │       └── provisioning/                 # Mounted by docker-unified as ../grafana/provisioning
@@ -182,5 +198,5 @@ This monitoring system consumes telemetry from the **RSA-Acelerografo** project:
 **Supervisor:** Milton Muñoz
 **Institución:** Red Sísmica del Austro (RSA) — Universidad de Cuenca
 **Periodo:** Octubre 2025 – Enero 2026
-**Last Updated**: February 23, 2026
-**Project Status**: 100% complete — DELIVERED
+**Last Updated**: May 12, 2026
+**Project Status**: En desarrollo activo — Se incorporó panel de control Node-RED para comandos remotos.

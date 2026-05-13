@@ -1,0 +1,6 @@
+{
+    "rsa-mqtt-broker": {
+        "user": "<MQTT_USERNAME>",
+        "password": "<MQTT_PASSWORD>"
+    }
+}

@@ -4,23 +4,24 @@
 
 Sistema de **monitoreo en tiempo real** para la **Red Sísmica del Austro (RSA)**, diseñado para supervisar el estado operativo de estaciones de acelerógrafos distribuidas. Basado en el stack **TIG (Telegraf, InfluxDB, Grafana)** con **integración MQTT**.
 
-**Estado del Proyecto: 100% completado — ENTREGADO** ✓
+**Estado del Proyecto: En desarrollo activo** — Stack TIG entregado ✓ · Panel de control Node-RED incorporado ✓
 
 ---
 
 ## Arquitectura
 
 ```
-Agente de Telemetría (mqtt_coordinator.py on Raspberry Pi)
-        ↓ MQTT
-Broker Mosquitto (RSA)
-        ↓
-┌─────────────────┐
-│    Telegraf      │  mqtt_consumer → influxdb_v2 output
-│  (Container 1)  │  Parsea topics y extrae station_id + data_type
-└────────┬────────┘
-         ↓
-┌─────────────────┐
+Estaciones Raspberry Pi (mqtt_coordinator.py)
+        ↓ telemetría MQTT        ↑ comandos MQTT
+Broker Mosquitto (VPS externo)
+   ↓ telemetría                      ↑ cmd/res
+┌─────────────────┐         ┌──────────────────────┐
+│    Telegraf      │         │      Node-RED         │
+│  (Container 1)  │         │    (Container 4)      │
+│  MQTT Consumer  │         │  Dashboard · Puerto   │
+└────────┬────────┘         │  1880 · Panel de      │
+         ↓                  │  control remoto       │
+┌─────────────────┐         └──────────────────────┘
 │    InfluxDB      │  Series temporales · Puerto 8086
 │  (Container 2)  │  Retención: 90 días
 └────────┬────────┘
@@ -34,14 +35,21 @@ Broker Mosquitto (RSA)
 ### Tópicos MQTT
 
 ```
-rsa/seismic/smart/<station_id>/telemetry/state      # Estado online/offline
-rsa/seismic/smart/<station_id>/telemetry/health     # CPU, disco, RAM, uptime
-rsa/seismic/smart/<station_id>/telemetry/heartbeat  # Último evento sísmico
-rsa/seismic/smart/<station_id>/events/detected      # Notificación de eventos
-rsa/seismic/smart/<station_id>/events/data          # Datos del evento
+# Telemetría (Raspberry Pi → Broker → Telegraf)
+rsa/seismic/smart/<station_id>/telemetry/state              # Estado online/offline
+rsa/seismic/smart/<station_id>/telemetry/health             # CPU, disco, RAM, uptime
+rsa/seismic/smart/<station_id>/telemetry/heartbeat          # Último evento sísmico
+rsa/seismic/smart/<station_id>/events/detected              # Notificación de eventos
+rsa/seismic/smart/<station_id>/events/data                  # Datos del evento
+
+# Comandos remotos (Node-RED → Broker → Raspberry Pi)
+rsa/seismic/smart/<target_id>/cmd/extract_event             # Comando de extracción
+rsa/seismic/smart/<station_id>/cmd/extract_event/res        # Respuesta de la estación
 ```
 
-Telegraf extrae `station_id` y `data_type` como tags indexados mediante `topic_parsing`.
+**Notas:**
+- Telegraf extrae `station_id` y `data_type` como tags indexados mediante `topic_parsing`.
+- `<target_id>` puede ser un ID de estación específico (`DEV00`, `DEV01`, `CHA01`, `CHA02`, `TEN01`) o `broadcast` para enviar a todas las estaciones.
 
 ### Métricas de salud
 
@@ -79,12 +87,20 @@ RSA-Intern-TIG-MQTT/
 ├── README.md                             # Este archivo
 │
 ├── services/
-│   ├── docker-unified/                   # Stack Docker activo
+│   ├── docker-unified/                   # Stack Docker activo (TIG)
 │   │   ├── docker-compose.yml            # InfluxDB + Telegraf + Grafana
 │   │   ├── telegraf.conf                 # Config con MQTT consumer + topic_parsing
 │   │   ├── .env.example                  # Plantilla de variables de entorno
 │   │   ├── .gitignore
 │   │   └── COMPARISON.md                 # Comparación con enfoque separado
+│   │
+│   ├── node-red/                         # Panel de control remoto
+│   │   ├── docker-compose.yml            # Stack Node-RED (puerto 1880)
+│   │   ├── flows.json                    # Flujos exportados y versionados
+│   │   ├── package.json                  # Dependencias (node-red-dashboard)
+│   │   ├── settings.js                   # Logging y configuración
+│   │   ├── .env.example                  # Plantilla de credenciales MQTT
+│   │   └── flows_cred.json.example       # Plantilla de credenciales Node-RED
 │   │
 │   └── grafana/
 │       └── provisioning/                 # Montado por docker-unified
@@ -143,6 +159,60 @@ rsa-grafana      Up (healthy)   0.0.0.0:3000->3000/tcp
 |----------|-----|--------------|
 | InfluxDB | http://localhost:8086 | `INFLUXDB_ADMIN_USER` / `INFLUXDB_ADMIN_PASSWORD` |
 | Grafana | http://localhost:3000 | `GRAFANA_ADMIN_USER` / `GRAFANA_ADMIN_PASSWORD` |
+| Node-RED | http://localhost:1880 | *(sin autenticación por defecto)* |
+| Node-RED UI | http://localhost:1880/ui | Dashboard del panel de control |
+
+---
+
+## Despliegue — Panel de Control Node-RED
+
+El servicio Node-RED se despliega de forma **independiente** del stack TIG, desde su propio directorio.
+
+### 1. Preparar archivos de credenciales
+
+```bash
+cd services/node-red
+
+# Variables de entorno del contenedor (broker MQTT)
+cp .env.example .env
+nano .env
+# → MQTT_BROKER=<IP_VPS>
+# → MQTT_USERNAME=<usuario>
+# → MQTT_PASSWORD=<contraseña>
+
+# Credenciales del nodo MQTT en Node-RED
+cp flows_cred.json.example flows_cred.json
+nano flows_cred.json
+# → Reemplazar <MQTT_USERNAME> y <MQTT_PASSWORD>
+```
+
+### 2. Corregir permisos del volumen (primera vez)
+
+```bash
+sudo mkdir -p /home/rsa/data/nodered
+sudo chown -R 1000:1000 /home/rsa/data/nodered
+```
+
+### 3. Iniciar el contenedor
+
+```bash
+docker compose up -d
+
+# El primer arranque instala node-red-dashboard automáticamente (~30 s)
+docker logs -f rsa-nodered
+```
+
+### 4. Verificar logs del servicio
+
+```bash
+# Logs persistentes propios de Node-RED
+tail -f /home/rsa/data/nodered/nodered.log
+```
+
+### 5. Acceder al panel
+
+- **Editor de flujos:** `http://<IP_SERVIDOR>:1880`
+- **Dashboard UI:** `http://<IP_SERVIDOR>:1880/ui`
 
 ---
 
@@ -218,13 +288,25 @@ mosquitto_sub -h <MQTT_BROKER> -u <USERNAME> -P <PASSWORD> -t "rsa/seismic/smart
 
 ## Troubleshooting
 
+### Stack TIG
+
 | Problema | Solución |
 |----------|----------|
 | Contenedores no inician | `docker compose logs -f` — verificar puertos 8086/3000 |
-| Sin datos en InfluxDB | Verificar que Telegraf recibe MQTT: `docker compose logs telegraf` |
+| Sin datos en InfluxDB | `docker compose logs telegraf` — verificar conexión MQTT |
 | Telegraf no parsea station_id | Verificar `topic_parsing` en `telegraf.conf` |
 | Grafana sin datasource | Verificar `services/grafana/provisioning/datasources/influxdb.yml` |
-| Error de red Docker | La red `monitoring` se crea automáticamente con `docker compose up` |
+| Error de red Docker | La red `rsa_network` debe crearse antes: `docker network create rsa_network` |
+
+### Node-RED
+
+| Problema | Causa | Solución |
+|----------|-------|----------|
+| Contenedor en `Restarting` loop | Permisos del volumen `/data` | `sudo chown -R 1000:1000 /home/rsa/data/nodered` |
+| Nodo MQTT en "conectando" permanente | `flows_cred.json` ausente o incorrecto | Verificar que `flows_cred.json` existe y tiene las credenciales correctas |
+| "Flujos detenidos por falta de tipo de nodo" | `node-red-dashboard` no instalado | `package.json` debe estar montado **sin** `:ro` para que `npm install` funcione |
+| Dashboard no carga en `/ui` | Paquete no instalado o flujos no iniciados | `docker logs rsa-nodered` — buscar errores de `npm install` |
+| `npm install` falla silenciosamente | `package.json` montado con `:ro` | Quitar el flag `:ro` del montaje en `docker-compose.yml` |
 
 ---
 
@@ -243,4 +325,4 @@ Este sistema consume telemetría del proyecto **RSA-Acelerografo**:
 **Supervisor:** Milton Muñoz
 **Institución:** Red Sísmica del Austro (RSA) — Universidad de Cuenca
 **Periodo:** Octubre 2025 – Enero 2026
-**Última actualización:** Febrero 23, 2026
+**Última actualización:** Mayo 13, 2026
