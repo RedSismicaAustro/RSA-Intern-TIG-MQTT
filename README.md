@@ -97,10 +97,8 @@ RSA-Intern-TIG-MQTT/
 │   ├── node-red/                         # Panel de control remoto
 │   │   ├── docker-compose.yml            # Stack Node-RED (puerto 1880)
 │   │   ├── flows.json                    # Flujos exportados y versionados
-│   │   ├── package.json                  # Dependencias (node-red-dashboard)
-│   │   ├── settings.js                   # Logging y configuración
-│   │   ├── .env.example                  # Plantilla de credenciales MQTT
-│   │   └── flows_cred.json.example       # Plantilla de credenciales Node-RED
+│   │   ├── package.json                  # Dependencias base
+│   │   └── settings.js                   # Logging y seguridad de la UI
 │   │
 │   └── grafana/
 │       └── provisioning/                 # Montado por docker-unified
@@ -166,53 +164,41 @@ rsa-grafana      Up (healthy)   0.0.0.0:3000->3000/tcp
 
 ## Despliegue — Panel de Control Node-RED
 
-El servicio Node-RED se despliega de forma **independiente** del stack TIG, desde su propio directorio.
+El servicio Node-RED se despliega de forma **independiente** del stack TIG, desde su propio directorio. Se gestiona íntegramente mediante un único volumen persistente de datos para evitar bloqueos del sistema de archivos (`EBUSY`).
 
-### 1. Preparar archivos de credenciales
-
-```bash
-cd services/node-red
-
-# Variables de entorno del contenedor (broker MQTT)
-cp .env.example .env
-nano .env
-# → MQTT_BROKER=<IP_VPS>
-# → MQTT_USERNAME=<usuario>
-# → MQTT_PASSWORD=<contraseña>
-
-# Credenciales del nodo MQTT en Node-RED
-cp flows_cred.json.example flows_cred.json
-nano flows_cred.json
-# → Reemplazar <MQTT_USERNAME> y <MQTT_PASSWORD>
-```
-
-### 2. Corregir permisos del volumen (primera vez)
+### 1. Preparar el entorno y permisos
 
 ```bash
 sudo mkdir -p /home/rsa/data/nodered
 sudo chown -R 1000:1000 /home/rsa/data/nodered
+
+# Copiar configuración base al volumen para el primer arranque
+cd services/node-red
+cp settings.js package.json /home/rsa/data/nodered/
 ```
 
-### 3. Iniciar el contenedor
+### 2. Iniciar el contenedor
 
 ```bash
 docker compose up -d
 
-# El primer arranque instala node-red-dashboard automáticamente (~30 s)
+# El primer arranque descargará dependencias de UI si package.json está presente
 docker logs -f rsa-nodered
 ```
+
+### 3. Acceder al panel y configurar credenciales
+
+- **Editor de flujos:** `http://<IP_SERVIDOR>:1880`
+- **Dashboard UI:** `http://<IP_SERVIDOR>:1880/ui`
+
+> ⚠️ **Nota de Seguridad:** Las credenciales del broker MQTT se deben ingresar **directamente en la interfaz web** de Node-RED (en la pestaña *Security* del nodo MQTT). El sistema las encriptará y guardará nativamente en el volumen.
 
 ### 4. Verificar logs del servicio
 
 ```bash
-# Logs persistentes propios de Node-RED
+# Logs persistentes propios de Node-RED (configurados en settings.js)
 tail -f /home/rsa/data/nodered/nodered.log
 ```
-
-### 5. Acceder al panel
-
-- **Editor de flujos:** `http://<IP_SERVIDOR>:1880`
-- **Dashboard UI:** `http://<IP_SERVIDOR>:1880/ui`
 
 ---
 
@@ -303,10 +289,9 @@ mosquitto_sub -h <MQTT_BROKER> -u <USERNAME> -P <PASSWORD> -t "rsa/seismic/smart
 | Problema | Causa | Solución |
 |----------|-------|----------|
 | Contenedor en `Restarting` loop | Permisos del volumen `/data` | `sudo chown -R 1000:1000 /home/rsa/data/nodered` |
-| Nodo MQTT en "conectando" permanente | `flows_cred.json` ausente o incorrecto | Verificar que `flows_cred.json` existe y tiene las credenciales correctas |
-| "Flujos detenidos por falta de tipo de nodo" | `node-red-dashboard` no instalado | `package.json` debe estar montado **sin** `:ro` para que `npm install` funcione |
-| Dashboard no carga en `/ui` | Paquete no instalado o flujos no iniciados | `docker logs rsa-nodered` — buscar errores de `npm install` |
-| `npm install` falla silenciosamente | `package.json` montado con `:ro` | Quitar el flag `:ro` del montaje en `docker-compose.yml` |
+| Error `EBUSY` al guardar | Montajes de archivos individuales (`:ro`) en Docker | Solo montar el directorio raíz `- /home/rsa/data/nodered:/data` |
+| Nodo MQTT en "conectando" | Credenciales incorrectas | Configurar credenciales en la pestaña *Security* del nodo MQTT web |
+| Flujos detenidos (faltan tipos) | Módulo UI no instalado | Instalar `node-red-dashboard` desde *Manage Palette* en la web. |
 
 ---
 

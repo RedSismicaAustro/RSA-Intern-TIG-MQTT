@@ -106,9 +106,8 @@ RSA-Intern-TIG-MQTT/
 │   ├── node-red/                         # ✅ Panel de control remoto
 │   │   ├── docker-compose.yml            # Stack Node-RED (puerto 1880, red rsa_network)
 │   │   ├── flows.json                    # Flujos exportados y versionados en Git
-│   │   ├── package.json                  # Dependencias (node-red-dashboard)
-│   │   ├── .env.example                  # Plantilla de variables de entorno
-│   │   └── .env                          # Credenciales reales (gitignored)
+│   │   ├── package.json                  # Dependencias base
+│   │   └── settings.js                   # Configuración de logs y acceso
 │   │
 │   └── grafana/
 │       └── provisioning/                 # Mounted by docker-unified as ../grafana/provisioning
