@@ -6,18 +6,11 @@ services:
     restart: unless-stopped
     ports:
       - "1880:1880"
-    env_file:
-      - .env
+
     environment:
       - TZ=America/Guayaquil
-      # Las variables MQTT_BROKER, MQTT_USERNAME, MQTT_PASSWORD se inyectan desde .env
     volumes:
       - /home/rsa/data/nodered:/data
-      # Configuración y credenciales (montaje individual sobre el volumen /data)
-      - ./settings.js:/data/settings.js:ro
-      - ./flows.json:/data/flows.json:ro
-      - ./flows_cred.json:/data/flows_cred.json:ro
-      - ./package.json:/data/package.json
     networks:
       - monitoring
 

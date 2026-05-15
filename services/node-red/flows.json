@@ -23,15 +23,16 @@
         "birthTopic": "",
         "birthQos": "0",
         "birthPayload": "",
+        "birthMsg": {},
         "closeTopic": "",
         "closePayload": "",
+        "closeMsg": {},
         "willTopic": "",
         "willQos": "0",
         "willPayload": "",
-        "credentials": {
-            "user": "${MQTT_USERNAME}",
-            "password": "${MQTT_PASSWORD}"
-        }
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     },
     {
         "id": "rsa-ui-tab",
@@ -48,8 +49,9 @@
         "tab": "rsa-ui-tab",
         "order": 1,
         "disp": true,
-        "width": "8",
-        "collapse": false
+        "width": 6,
+        "collapse": false,
+        "className": ""
     },
     {
         "id": "rsa-ui-group-log",
@@ -58,37 +60,155 @@
         "tab": "rsa-ui-tab",
         "order": 2,
         "disp": true,
-        "width": "8",
+        "width": 10,
         "collapse": false
     },
     {
-        "id": "node-target-id",
-        "type": "ui_dropdown",
+        "id": "f72ee6ff6b5c5bb7",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": true,
+                "reset": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "5e1509aa250696b5",
+        "type": "ui_spacer",
         "z": "rsa-tab-control",
-        "name": "Target ID",
-        "label": "Estación Destino",
-        "tooltip": "Selecciona una estación o 'broadcast' para enviar a todas",
-        "place": "Seleccionar...",
+        "name": "spacer",
         "group": "rsa-ui-group-form",
-        "order": 1,
-        "width": "4",
-        "height": "1",
-        "passthru": true,
-        "multiple": false,
-        "options": [
-            {"label": "📡 Todas (broadcast)", "value": "broadcast"},
-            {"label": "DEV00", "value": "DEV00"},
-            {"label": "DEV01", "value": "DEV01"},
-            {"label": "CHA01", "value": "CHA01"},
-            {"label": "CHA02", "value": "CHA02"},
-            {"label": "TEN01", "value": "TEN01"}
-        ],
-        "payload": "",
-        "topic": "target_id",
-        "topicType": "str",
-        "x": 140,
-        "y": 80,
-        "wires": [["node-store-target"]]
+        "order": 2,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "a0665d0e6554401b",
+        "type": "ui_spacer",
+        "z": "rsa-tab-control",
+        "name": "spacer",
+        "group": "rsa-ui-group-form",
+        "order": 4,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "393466d14a597062",
+        "type": "ui_spacer",
+        "z": "rsa-tab-control",
+        "name": "spacer",
+        "group": "rsa-ui-group-form",
+        "order": 6,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "1a4bf511576c0a39",
+        "type": "ui_spacer",
+        "z": "rsa-tab-control",
+        "name": "spacer",
+        "group": "rsa-ui-group-form",
+        "order": 8,
+        "width": 6,
+        "height": 1
+    },
+    {
+        "id": "1d28b120b678dfde",
+        "type": "ui_spacer",
+        "z": "rsa-tab-control",
+        "name": "spacer",
+        "group": "rsa-ui-group-form",
+        "order": 10,
+        "width": 6,
+        "height": 1
     },
     {
         "id": "node-store-target",
@@ -96,7 +216,13 @@
         "z": "rsa-tab-control",
         "name": "Guardar targetId",
         "rules": [
-            {"t": "set", "p": "targetId", "pt": "flow", "to": "payload", "tot": "msg"}
+            {
+                "t": "set",
+                "p": "targetId",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
         ],
         "action": "",
         "property": "",
@@ -105,32 +231,23 @@
         "reg": false,
         "x": 350,
         "y": 80,
-        "wires": [[]]
-    },
-    {
-        "id": "node-start-time",
-        "type": "ui_date_picker",
-        "z": "rsa-tab-control",
-        "name": "Start Time",
-        "label": "Fecha y Hora de Inicio",
-        "group": "rsa-ui-group-form",
-        "order": 2,
-        "width": "4",
-        "height": "1",
-        "passthru": true,
-        "topic": "start_time",
-        "topicType": "str",
-        "x": 140,
-        "y": 140,
-        "wires": [["node-store-start"]]
+        "wires": [
+            []
+        ]
     },
     {
         "id": "node-store-start",
         "type": "change",
         "z": "rsa-tab-control",
-        "name": "Guardar startTime",
+        "name": "Guardar startDate",
         "rules": [
-            {"t": "set", "p": "startTime", "pt": "flow", "to": "payload", "tot": "msg"}
+            {
+                "t": "set",
+                "p": "startDate",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
         ],
         "action": "",
         "property": "",
@@ -139,29 +256,9 @@
         "reg": false,
         "x": 350,
         "y": 140,
-        "wires": [[]]
-    },
-    {
-        "id": "node-duration",
-        "type": "ui_numeric",
-        "z": "rsa-tab-control",
-        "name": "Duration",
-        "label": "Duración (segundos)",
-        "tooltip": "Duración del segmento a extraer",
-        "group": "rsa-ui-group-form",
-        "order": 3,
-        "width": "2",
-        "height": "1",
-        "passthru": true,
-        "topic": "duration",
-        "topicType": "str",
-        "format": "{{value}}",
-        "min": "1",
-        "max": "3600",
-        "step": "1",
-        "x": 140,
-        "y": 200,
-        "wires": [["node-store-duration"]]
+        "wires": [
+            []
+        ]
     },
     {
         "id": "node-store-duration",
@@ -169,7 +266,13 @@
         "z": "rsa-tab-control",
         "name": "Guardar duration",
         "rules": [
-            {"t": "set", "p": "duration", "pt": "flow", "to": "payload", "tot": "msg"}
+            {
+                "t": "set",
+                "p": "duration",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
         ],
         "action": "",
         "property": "",
@@ -177,35 +280,10 @@
         "to": "",
         "reg": false,
         "x": 350,
-        "y": 200,
-        "wires": [[]]
-    },
-    {
-        "id": "node-upload-switch",
-        "type": "ui_switch",
-        "z": "rsa-tab-control",
-        "name": "Upload",
-        "label": "Subir a Google Drive",
-        "tooltip": "Si está activado, la estación sube el evento extraído a Google Drive",
-        "group": "rsa-ui-group-form",
-        "order": 4,
-        "width": "2",
-        "height": "1",
-        "passthru": true,
-        "topic": "upload",
-        "topicType": "str",
-        "style": "",
-        "onvalue": "true",
-        "onvalueType": "bool",
-        "onicon": "",
-        "oncolor": "",
-        "offvalue": "false",
-        "offvalueType": "bool",
-        "officon": "",
-        "offcolor": "",
-        "x": 140,
         "y": 260,
-        "wires": [["node-store-upload"]]
+        "wires": [
+            []
+        ]
     },
     {
         "id": "node-store-upload",
@@ -213,7 +291,13 @@
         "z": "rsa-tab-control",
         "name": "Guardar upload",
         "rules": [
-            {"t": "set", "p": "upload", "pt": "flow", "to": "payload", "tot": "msg"}
+            {
+                "t": "set",
+                "p": "upload",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
         ],
         "action": "",
         "property": "",
@@ -221,39 +305,17 @@
         "to": "",
         "reg": false,
         "x": 350,
-        "y": 260,
-        "wires": [[]]
-    },
-    {
-        "id": "node-send-button",
-        "type": "ui_button",
-        "z": "rsa-tab-control",
-        "name": "Enviar Comando",
-        "group": "rsa-ui-group-form",
-        "order": 5,
-        "width": "4",
-        "height": "1",
-        "passthru": false,
-        "label": "🚀 Enviar Comando",
-        "tooltip": "Publica el comando de extracción de evento en el broker MQTT",
-        "color": "",
-        "bgcolor": "#1d4ed8",
-        "className": "",
-        "icon": "",
-        "payload": "send",
-        "payloadType": "str",
-        "topic": "",
-        "topicType": "str",
-        "x": 140,
-        "y": 340,
-        "wires": [["node-build-command"]]
+        "y": 320,
+        "wires": [
+            []
+        ]
     },
     {
         "id": "node-build-command",
         "type": "function",
         "z": "rsa-tab-control",
         "name": "Build Command",
-        "func": "// Recuperar valores guardados en el contexto del flujo\nconst targetId = flow.get('targetId') || 'broadcast';\nconst startTime = flow.get('startTime');\nconst duration = flow.get('duration') || 30;\nconst upload = flow.get('upload') !== undefined ? flow.get('upload') : true;\n\n// Validación: Start Time es obligatorio\nif (!startTime) {\n    node.warn('⚠️ Start Time es obligatorio antes de enviar el comando');\n    return null;\n}\n\n// Formatear fecha al formato requerido: YYYY-MM-DDZHH:MM:SS\n// El formato ISO 8601 del date_picker es YYYY-MM-DDTHH:MM:SS\nconst dt = new Date(startTime);\nif (isNaN(dt.getTime())) {\n    node.warn('⚠️ Formato de fecha inválido: ' + startTime);\n    return null;\n}\n\nconst pad = (n) => String(n).padStart(2, '0');\nconst isoDate = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}Z${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;\n\n// Generar request_id único (base36 del timestamp)\nconst requestId = 'evt-' + Date.now().toString(36);\n\n// Construir payload según el esquema definido\nmsg.payload = JSON.stringify({\n    start: isoDate,\n    duration: Number(duration),\n    upload: Boolean(upload),\n    request_id: requestId\n});\n\n// Definir tópico dinámicamente\nmsg.topic = `rsa/seismic/smart/${targetId}/cmd/extract_event`;\nmsg.qos = 1;\nmsg.retain = false;\n\nnode.log(`[RSA] Comando enviado → ${msg.topic} | req_id: ${requestId}`);\n\nreturn msg;",
+        "func": "// 1. Recuperar valores del contexto\nconst targetId = flow.get('targetId') || 'broadcast';\nconst startDate = flow.get('startDate'); \nconst startTime = flow.get('startTime'); // Ahora sabemos que suele ser un número (milisegundos)\nconst duration = flow.get('duration') || 30; \nconst upload = flow.get('upload') !== undefined ? flow.get('upload') : true;\n\n// 2. Validaciones de seguridad\nif (!startDate || startTime === undefined) {\n    node.warn('⚠️ La Fecha y la Hora son obligatorias. Selecciónalas en el panel.');\n    return null;\n}\n\n// 3. Fusión de Fecha y Hora (El motor matemático)\nconst dt = new Date(startDate);\nlet hours = 0;\nlet minutes = 0;\n\nif (typeof startTime === 'number') {\n    // Si el dashboard envía milisegundos desde la medianoche\n    hours = Math.floor(startTime / 3600000);\n    minutes = Math.floor((startTime % 3600000) / 60000);\n} else if (typeof startTime === 'string' && startTime.includes(':')) {\n    // Fallback de seguridad por si algún navegador envía texto \"HH:mm\"\n    const parts = startTime.split(':');\n    hours = parseInt(parts[0], 10);\n    minutes = parseInt(parts[1], 10);\n} else {\n    node.warn('⚠️ Tipo de dato de hora desconocido: ' + (typeof startTime) + ' -> ' + startTime);\n    return null;\n}\n\ndt.setHours(hours);\ndt.setMinutes(minutes);\ndt.setSeconds(0); \n\n// 4. Formatear a YYYY-MM-DDZHH:MM:SS\nconst pad = (n) => String(n).padStart(2, '0');\nconst isoDate = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}Z${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;\n\n// 5. Construcción del JSON y publicación\nconst requestId = 'evt-' + Date.now().toString(36);\n\nmsg.payload = JSON.stringify({\n    start: isoDate,\n    duration: Number(duration),\n    upload: Boolean(upload),\n    request_id: requestId\n});\n\nmsg.topic = `rsa/seismic/smart/${targetId}/cmd/extract_event`;\nmsg.qos = 1;\n\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -261,8 +323,13 @@
         "finalize": "",
         "libs": [],
         "x": 360,
-        "y": 340,
-        "wires": [["node-mqtt-out", "node-debug-out"]]
+        "y": 400,
+        "wires": [
+            [
+                "node-mqtt-out",
+                "node-debug-out"
+            ]
+        ]
     },
     {
         "id": "node-mqtt-out",
@@ -279,7 +346,7 @@
         "expiry": "",
         "broker": "rsa-mqtt-broker",
         "x": 600,
-        "y": 340,
+        "y": 400,
         "wires": []
     },
     {
@@ -289,14 +356,14 @@
         "name": "Debug — Comando enviado",
         "active": true,
         "tosidebar": true,
-        "console": false,
+        "console": true,
         "tostatus": false,
         "complete": "true",
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 620,
-        "y": 400,
+        "x": 630,
+        "y": 460,
         "wires": []
     },
     {
@@ -313,15 +380,19 @@
         "rh": 0,
         "inputs": 0,
         "x": 140,
-        "y": 520,
-        "wires": [["node-parse-response"]]
+        "y": 580,
+        "wires": [
+            [
+                "node-parse-response"
+            ]
+        ]
     },
     {
         "id": "node-parse-response",
         "type": "function",
         "z": "rsa-tab-control",
         "name": "Parse Response",
-        "func": "// Extraer station_id del tópico MQTT\n// Formato: rsa/seismic/smart/{station_id}/cmd/extract_event/res\nconst parts = msg.topic.split('/');\nconst stationId = parts[3] || 'desconocida';\n\nconst response = msg.payload || {};\nconst status = response.status || 'unknown';\nconst requestId = response.request_id || 'N/A';\n\n// Timestamp en la zona horaria del proyecto\nconst now = new Date();\nconst timestamp = now.toLocaleString('es-EC', {\n    timeZone: 'America/Guayaquil',\n    hour12: false\n});\n\n// Ícono y color según estado\nconst icon = status === 'completed' ? '✅' : status === 'error' ? '❌' : '⚠️';\nconst color = status === 'completed' ? '#16a34a' : status === 'error' ? '#dc2626' : '#d97706';\n\n// Mensaje para la UI de texto\nconst logLine = `[${timestamp}] ${icon} ${stationId} — ${status.toUpperCase()} (req: ${requestId})`;\n\n// Recuperar historial y agregar nueva línea\nlet history = flow.get('responseHistory') || [];\nhistory.unshift(logLine); // Más reciente primero\nif (history.length > 50) history.pop(); // Límite de 50 entradas\nflow.set('responseHistory', history);\n\n// Salida 1: Notificación efímera (toast)\nconst notifMsg = {\n    payload: `${icon} <b>${stationId}</b>: ${status} — req: ${requestId}`,\n    color: color,\n    background: color,\n    border: color\n};\n\n// Salida 2: Historial de texto para el panel\nconst histMsg = {\n    payload: history.join('\\n')\n};\n\nreturn [notifMsg, histMsg];",
+        "func": "// Extraer station_id del tópico MQTT\n// Formato: rsa/seismic/smart/{station_id}/cmd/extract_event/res\nconst parts = msg.topic.split('/');\nconst stationId = parts[3] || 'desconocida';\n\nconst response = msg.payload || {};\nconst status = response.status || 'unknown';\nconst requestId = response.request_id || 'N/A';\n\n// Timestamp en la zona horaria del proyecto\nconst now = new Date();\nconst timestamp = now.toLocaleString('es-EC', {\n    timeZone: 'America/Guayaquil',\n    hour12: false\n});\n\n// Ícono y color según estado\nconst icon = status === 'completed' ? '✅' : status === 'error' ? '❌' : '⚠️';\nconst color = status === 'completed' ? '#16a34a' : status === 'error' ? '#dc2626' : '#d97706';\n\n// Mensaje para la UI de texto\nconst logLine = `[${timestamp}] ${icon} ${stationId} — ${status.toUpperCase()} (req: ${requestId})`;\n\n// Recuperar historial y agregar nueva línea\nlet history = flow.get('responseHistory') || [];\nhistory.unshift(logLine); // Más reciente primero\nif (history.length > 50) history.pop(); // Límite de 50 entradas\nflow.set('responseHistory', history);\n\n// Salida 1: Notificación efímera (toast)\nconst notifMsg = {\n    payload: `${icon} <b>${stationId}</b>: ${status} — req: ${requestId}`,\n    color: color,\n    background: color,\n    border: color\n};\n\n// Salida 2: Historial limpio para el nodo template\nconst histMsg = {\n    payload: history.join('<br><br>')\n};\n\nreturn [notifMsg, histMsg];",
         "outputs": 2,
         "timeout": "",
         "noerr": 0,
@@ -329,10 +400,156 @@
         "finalize": "",
         "libs": [],
         "x": 380,
-        "y": 520,
+        "y": 580,
         "wires": [
-            ["node-ui-notification"],
-            ["node-ui-log"]
+            [
+                "node-ui-notification"
+            ],
+            [
+                "94db4fbc4528f423"
+            ]
+        ]
+    },
+    {
+        "id": "node-send-button",
+        "type": "ui_button",
+        "z": "rsa-tab-control",
+        "name": "Enviar Comando",
+        "group": "rsa-ui-group-form",
+        "order": 11,
+        "width": 6,
+        "height": 1,
+        "passthru": false,
+        "label": "🚀 Enviar Comando",
+        "tooltip": "Publica el comando de extracción de evento en el broker MQTT",
+        "color": "",
+        "bgcolor": "#1d4ed8",
+        "className": "",
+        "icon": "",
+        "payload": "send",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 140,
+        "y": 400,
+        "wires": [
+            [
+                "node-build-command"
+            ]
+        ]
+    },
+    {
+        "id": "node-target-id",
+        "type": "ui_dropdown",
+        "z": "rsa-tab-control",
+        "name": "Target ID",
+        "label": "Estación ",
+        "tooltip": "Selecciona una estación o 'broadcast' para enviar a todas",
+        "place": "Seleccionar...",
+        "group": "rsa-ui-group-form",
+        "order": 1,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "multiple": false,
+        "options": [
+            {
+                "label": "📡 Todas (broadcast)",
+                "value": "broadcast",
+                "type": "str"
+            },
+            {
+                "label": "DEV00",
+                "value": "DEV00",
+                "type": "str"
+            },
+            {
+                "label": "DEV01",
+                "value": "DEV01",
+                "type": "str"
+            },
+            {
+                "label": "CHA01",
+                "value": "CHA01",
+                "type": "str"
+            },
+            {
+                "label": "CHA02",
+                "value": "CHA02",
+                "type": "str"
+            },
+            {
+                "label": "TEN01",
+                "value": "TEN01",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "target_id",
+        "topicType": "str",
+        "className": "",
+        "x": 140,
+        "y": 80,
+        "wires": [
+            [
+                "node-store-target"
+            ]
+        ]
+    },
+    {
+        "id": "node-upload-switch",
+        "type": "ui_switch",
+        "z": "rsa-tab-control",
+        "name": "Upload",
+        "label": "Subir a Google Drive",
+        "tooltip": "Si está activado, la estación sube el evento extraído a Google Drive",
+        "group": "rsa-ui-group-form",
+        "order": 9,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "decouple": "false",
+        "topic": "upload",
+        "topicType": "str",
+        "style": "",
+        "onvalue": "true",
+        "onvalueType": "bool",
+        "onicon": "",
+        "oncolor": "",
+        "offvalue": "false",
+        "offvalueType": "bool",
+        "officon": "",
+        "offcolor": "",
+        "animate": true,
+        "className": "",
+        "x": 140,
+        "y": 320,
+        "wires": [
+            [
+                "node-store-upload"
+            ]
+        ]
+    },
+    {
+        "id": "node-start-time",
+        "type": "ui_date_picker",
+        "z": "rsa-tab-control",
+        "name": "Start Date",
+        "label": "Fecha ",
+        "group": "rsa-ui-group-form",
+        "order": 3,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "topic": "start_date",
+        "topicType": "str",
+        "className": "",
+        "x": 130,
+        "y": 140,
+        "wires": [
+            [
+                "node-store-start"
+            ]
         ]
     },
     {
@@ -348,30 +565,116 @@
         "cancel": "",
         "raw": true,
         "className": "",
+        "topic": "",
         "name": "Notificación de Respuesta",
         "x": 620,
-        "y": 500,
+        "y": 560,
         "wires": []
     },
     {
-        "id": "node-ui-log",
-        "type": "ui_text",
+        "id": "cfe1d46c0903834d",
+        "type": "ui_text_input",
+        "z": "rsa-tab-control",
+        "name": "Duration",
+        "label": "Duracion (segundos)",
+        "tooltip": "Duración del segmento a extraer",
+        "group": "rsa-ui-group-form",
+        "order": 7,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "number",
+        "delay": "0",
+        "topic": "duration",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 140,
+        "y": 260,
+        "wires": [
+            [
+                "node-store-duration"
+            ]
+        ]
+    },
+    {
+        "id": "321c49d858082192",
+        "type": "ui_text_input",
+        "z": "rsa-tab-control",
+        "name": "Start Time",
+        "label": "Hora de inicio ",
+        "tooltip": "",
+        "group": "rsa-ui-group-form",
+        "order": 5,
+        "width": 6,
+        "height": 1,
+        "passthru": true,
+        "mode": "time",
+        "delay": "300",
+        "topic": "start_time",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "str",
+        "x": 130,
+        "y": 200,
+        "wires": [
+            [
+                "2c963d4ff6becd68"
+            ]
+        ]
+    },
+    {
+        "id": "2c963d4ff6becd68",
+        "type": "change",
+        "z": "rsa-tab-control",
+        "name": "Guardar startTime",
+        "rules": [
+            {
+                "t": "set",
+                "p": "startTime",
+                "pt": "flow",
+                "to": "payload",
+                "tot": "msg"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 350,
+        "y": 200,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "94db4fbc4528f423",
+        "type": "ui_template",
         "z": "rsa-tab-control",
         "group": "rsa-ui-group-log",
+        "name": "Log de respuestas",
         "order": 1,
-        "width": "8",
-        "height": "6",
-        "name": "Log de Respuestas",
-        "label": "",
-        "format": "{{msg.payload}}",
-        "layout": "row-left",
+        "width": 10,
+        "height": 11,
+        "format": "<div\n    style=\"height: 100%; width: 100%; overflow-y: auto; text-align: left; padding: 10px; font-family: monospace; font-size: 13px; line-height: 1.5; box-sizing: border-box;\">\n    <span ng-bind-html=\"msg.payload\"></span>\n</div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
         "className": "",
-        "style": false,
-        "font": "",
-        "fontSize": "14",
-        "color": "#e2e8f0",
-        "x": 620,
-        "y": 540,
-        "wires": []
+        "x": 610,
+        "y": 620,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3d7aa2cb75b8c013",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
     }
 ]

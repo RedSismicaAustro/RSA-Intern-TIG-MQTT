@@ -18,7 +18,7 @@
     "editable": true,
     "fiscalYearStartMonth": 0,
     "graphTooltip": 0,
-    "id": 10,
+    "id": 14,
     "links": [],
     "panels": [
         {
@@ -112,7 +112,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"uptime_s\")\r\n  |> last()",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"uptime_s\")\r\n  |> group()\r\n  |> last()",
                     "refId": "A"
                 }
             ],
@@ -251,7 +251,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"disk_percent\") \r\n  |> last()",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"disk_percent\") \r\n  |> group()\r\n  |> last()",
                     "refId": "A"
                 }
             ],
@@ -320,7 +320,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"ram_percent\")\r\n  |> last()",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"ram_percent\")\r\n  |> group()\r\n  |> last()",
                     "refId": "A"
                 }
             ],
@@ -410,7 +410,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"load_avg_15m\")\r\n  |> last()\r\n",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"load_avg_15m\")\r\n  |> group()\r\n  |> last()\r\n",
                     "refId": "A"
                 }
             ],
@@ -509,7 +509,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"disk_percent\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"disk_percent\")\r\n  |> group()\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
                     "refId": "A"
                 }
             ],
@@ -608,7 +608,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"ram_percent\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"ram_percent\")\r\n  |> group()\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
                     "refId": "A"
                 }
             ],
@@ -709,7 +709,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"load_avg_15m\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"load_avg_15m\")\r\n  |> group()\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
                     "refId": "A"
                 }
             ],
@@ -805,7 +805,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cpu_temp_c\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n\r\n",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"cpu_temp_c\")\r\n  |> group()\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")\r\n\r\n",
                     "refId": "A"
                 }
             ],
@@ -890,7 +890,7 @@
         "list": [
             {
                 "current": {
-                    "selected": false,
+                    "selected": true,
                     "text": "CHA01",
                     "value": "CHA01"
                 },
@@ -925,6 +925,6 @@
     "timezone": "browser",
     "title": "Health",
     "uid": "ffcrjb8bumy2ob2",
-    "version": 5,
+    "version": 1,
     "weekStart": ""
 }
