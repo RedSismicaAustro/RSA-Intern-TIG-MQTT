@@ -9,6 +9,7 @@ services:
 
     environment:
       - TZ=America/Guayaquil
+      - MQTT_BROKER=${MQTT_BROKER}
     volumes:
       - /home/rsa/data/nodered:/data
     networks:
