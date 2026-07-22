@@ -2,9 +2,9 @@
 
 ## Descripción general
 
-Sistema de **monitoreo en tiempo real** para la **Red Sísmica del Austro (RSA)**, diseñado para supervisar el estado operativo de estaciones de acelerógrafos distribuidas. Basado en el stack **TIG (Telegraf, InfluxDB, Grafana)** con **integración MQTT**.
+Sistema de **monitoreo en tiempo real** para la **Red Sísmica del Austro (RSA)**, diseñado para supervisar el estado operativo de estaciones de acelerógrafos distribuidas. Basado en el stack **TIG (Telegraf, InfluxDB, Grafana)** con **integración MQTT** y **correlación regional de eventos**.
 
-**Estado del Proyecto: En desarrollo activo** — Stack TIG entregado ✓ · Panel de control Node-RED incorporado ✓
+**Estado del Proyecto: En desarrollo activo** — Stack TIG entregado ✓ · Panel Node-RED incorporado ✓ · Correlador Regional MQTT incorporado ✓
 
 ---
 
@@ -15,35 +15,36 @@ Estaciones Raspberry Pi (mqtt_coordinator.py)
         ↓ telemetría MQTT        ↑ comandos MQTT
 Broker Mosquitto (VPS externo)
    ↓ telemetría                      ↑ cmd/res
-┌─────────────────┐         ┌──────────────────────┐
-│    Telegraf      │         │      Node-RED         │
-│  (Container 1)  │         │    (Container 4)      │
-│  MQTT Consumer  │         │  Dashboard · Puerto   │
-└────────┬────────┘         │  1880 · Panel de      │
-         ↓                  │  control remoto       │
-┌─────────────────┐         └──────────────────────┘
-│    InfluxDB      │  Series temporales · Puerto 8086
-│  (Container 2)  │  Retención: 90 días
-└────────┬────────┘
-         ↓
-┌─────────────────┐
-│    Grafana       │  Dashboards + alertas · Puerto 3000
-│  (Container 3)  │  Provisioning automático
-└─────────────────┘
+┌─────────────────┐         ┌──────────────────────┐         ┌──────────────────────────────┐
+│    Telegraf      │         │      Node-RED        │         │   rsa-correlator (Container 5)   │
+│  (Container 1)  │         │    (Container 4)     │         │  Correlación temporal 10s    │
+│  MQTT Consumer  │         │  Dashboard · Puerto  │         │  Disparo broadcast masivo    │
+└────────┬────────┘         │  1880 · Panel remoto │         └──────────────┬───────────────┘
+         ↓                  └──────────────────────┘                        │
+┌─────────────────┐                                                         │ (cmd/extract_event)
+│    InfluxDB      │  Series temporales · Puerto 8086                       │
+│  (Container 2)  │  Retención: 90 días                                    │
+└────────┬────────┘                                                         │
+         ↓                                                                  │
+┌─────────────────┐                                                         │
+│    Grafana       │  Dashboards + alertas · Puerto 3000                    │
+│  (Container 3)  │  Provisioning automático                                │
+└─────────────────┘ <───────────────────────────────────────────────────────┘
 ```
 
 ### Tópicos MQTT
 
 ```
-# Telemetría (Raspberry Pi → Broker → Telegraf)
+# Telemetría (Raspberry Pi → Broker → Telegraf / Correlador)
 rsa/seismic/smart/<station_id>/telemetry/state              # Estado online/offline
 rsa/seismic/smart/<station_id>/telemetry/health             # CPU, disco, RAM, uptime
 rsa/seismic/smart/<station_id>/telemetry/heartbeat          # Último evento sísmico
-rsa/seismic/smart/<station_id>/events/detected              # Notificación de eventos
+rsa/seismic/smart/<station_id>/events/detected              # Notificación de eventos (evaluado por Correlador)
 rsa/seismic/smart/<station_id>/events/data                  # Datos del evento
 
-# Comandos remotos (Node-RED → Broker → Raspberry Pi)
-rsa/seismic/smart/<target_id>/cmd/extract_event             # Comando de extracción
+# Comandos remotos (Correlador / Node-RED → Broker → Raspberry Pi)
+rsa/seismic/smart/broadcast/cmd/extract_event              # Comando broadcast de extracción regional
+rsa/seismic/smart/<target_id>/cmd/extract_event             # Comando de extracción dirigido
 rsa/seismic/smart/<station_id>/cmd/extract_event/res        # Respuesta de la estación
 ```
 
@@ -86,9 +87,17 @@ RSA-Intern-TIG-MQTT/
 ├── AGENTS.md                             # Guía para agentes de IA
 ├── README.md                             # Este archivo
 │
+├── scripts/
+│   └── correlator/                       # Servicio Correlador de Eventos Regionales
+│       ├── config.json                   # Umbrales (10s, ≥ 2 estaciones, delete_after_upload)
+│       ├── Dockerfile                    # Definición de contenedor Python 3.11
+│       ├── regional_event_correlator.py  # Daemon correlador MQTT
+│       ├── requirements.txt              # Dependencias (paho-mqtt, python-dotenv)
+│       └── .env.example                  # Plantilla de credenciales del Broker
+│
 ├── services/
-│   ├── docker-unified/                   # Stack Docker activo (TIG)
-│   │   ├── docker-compose.yml            # InfluxDB + Telegraf + Grafana
+│   ├── docker-unified/                   # Stack Docker activo (TIG + Correlador)
+│   │   ├── docker-compose.yml            # InfluxDB + Telegraf + Grafana + Correlator
 │   │   ├── telegraf.conf                 # Config con MQTT consumer + topic_parsing
 │   │   ├── .env.example                  # Plantilla de variables de entorno
 │   │   ├── .gitignore
@@ -310,4 +319,4 @@ Este sistema consume telemetría del proyecto **RSA-Acelerografo**:
 **Supervisor:** Milton Muñoz
 **Institución:** Red Sísmica del Austro (RSA) — Universidad de Cuenca
 **Periodo:** Octubre 2025 – Enero 2026
-**Última actualización:** Mayo 13, 2026
+**Última actualización:** Julio 22, 2026
