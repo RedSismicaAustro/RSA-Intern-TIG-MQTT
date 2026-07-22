@@ -105,6 +105,23 @@ services:
       retries: 5
       start_period: 30s
 
+  # ============================================================================
+  # Correlador de Eventos Regionales - Servicio de Análisis Temporal MQTT
+  # ============================================================================
+  correlator:
+    build:
+      context: ../../scripts/correlator
+      dockerfile: Dockerfile
+    container_name: rsa-correlator
+    restart: unless-stopped
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+    networks:
+      - monitoring
+
 # ==============================================================================
 # Redes
 # ==============================================================================

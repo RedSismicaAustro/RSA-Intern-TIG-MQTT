@@ -1,0 +1,18 @@
+{
+    "org": "rsa",
+    "app": "seismic",
+    "cap": "smart",
+    "correlador": {
+        "min_estaciones": 2,
+        "ventana_coincidencia_s": 10.0,
+        "cooldown_evento_s": 60.0,
+        "ventana_pre_evento_s": 60,
+        "ventana_post_evento_s": 60,
+        "delete_after_upload": true
+    },
+    "topics": {
+        "events_subscription": "{org}/{app}/{cap}/+/events/detected",
+        "cmd_broadcast": "{org}/{app}/{cap}/broadcast/cmd/extract_event",
+        "cmd_response_sub": "{org}/{app}/{cap}/+/cmd/extract_event/res"
+    }
+}
