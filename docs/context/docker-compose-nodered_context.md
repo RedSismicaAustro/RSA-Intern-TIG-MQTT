@@ -26,8 +26,8 @@ temas: [docker-compose, node-red, automation, panel-control, mqtt, ui-dashboard]
 El panel de control remoto opera como una consola web interactiva conectada al broker MQTT del proyecto. Su funcionamiento se define en dos flujos principales:
 
 1. **Flujo de Salida (Construcción y Envío de Comandos)**:
-   - El operador selecciona los parámetros en el formulario visual (Estación, Fecha, Hora de inicio, Duración y switch para subir a Google Drive).
-   - Al presionar **"Enviar Comando"**, un nodo de función valida los campos, unifica la fecha y la hora en formato ISO (`YYYY-MM-DDZHH:MM:SS`), genera un identificador de petición único (`request_id`) y publica un mensaje JSON en el tópico `rsa/seismic/smart/{target_id}/cmd/extract_event` (QoS 1).
+   - El operador selecciona los parámetros en el formulario visual (Estación, Fecha, Hora de inicio, Duración y selector de Zona Horaria: Tiempo Local UTC-5 o Tiempo UTC).
+   - Al presionar **"Enviar Comando"**, un nodo de función valida los campos, convierte y unifica la fecha y hora en formato ISO UTC (`YYYY-MM-DDZHH:MM:SS`), inyecta los flags por defecto (`upload: true`, `delete_after_upload: true`), genera un identificador de petición único (`request_id`) y publica un mensaje JSON en el tópico `rsa/seismic/smart/{target_id}/cmd/extract_event` (QoS 1).
 2. **Flujo de Entrada (Recepción y Log de Respuestas)**:
    - Node-RED se suscribe al tópico `rsa/seismic/smart/+/cmd/extract_event/res` para recibir las respuestas de estado de las estaciones.
    - Las respuestas se parsean en un nodo de función que extrae el identificador de la estación, evalúa el estado (`completed`/`error`), asigna formato HTML y color a la notificación, y añade el registro a un historial en memoria (`flow.responseHistory`) con límite de 50 entradas.
@@ -89,7 +89,8 @@ Contiene la configuración del paquete npm local e integra la dependencia `"node
 | `rsa-tab-control` | `tab` | Pestaña contenedora de toda la lógica del panel remoto. |
 | `rsa-mqtt-broker` | `mqtt-broker` | Define la conexión MQTT utilizando la variable de entorno `${MQTT_BROKER}` en el puerto 1883 sin TLS. ClientID: `nodered-rsa-control`. |
 | `node-target-id` | `ui_dropdown` | Dropdown visual para seleccionar el destinatario del comando (`broadcast` o ID de estación individual: `DEV00`, `DEV01`, `CHA01`, `CHA02`, `TEN01`). |
-| `node-build-command` | `function` | Motor matemático que combina la fecha y hora seleccionada (gestionando la hora en milisegundos), formatea el timestamp a ISO `YYYY-MM-DDZHH:MM:SS`, genera un `request_id` dinámico e inyecta la cabecera MQTT. |
+| `node-timezone-select` | `ui_dropdown` | Dropdown visual para seleccionar la zona horaria de entrada (`Tiempo Local (UTC-5)` o `Tiempo UTC`). |
+| `node-build-command` | `function` | Motor matemático que combina fecha y hora, realiza la conversión a UTC según la zona horaria elegida, inyecta `upload: true` y `delete_after_upload: true`, genera un `request_id` dinámico e inyecta la cabecera MQTT. |
 | `node-mqtt-out` | `mqtt out` | Publica el comando en el tópico dinámico de control con QoS 1. |
 | `node-mqtt-in` | `mqtt in` | Se suscribe a `rsa/seismic/smart/+/cmd/extract_event/res` con QoS 1 para capturar respuestas. |
 | `node-parse-response` | `function` | Procesa las respuestas de la estación, genera la notificación visual con código de colores (verde para `completed`, rojo para `error`) y gestiona la pila del historial en memoria. |

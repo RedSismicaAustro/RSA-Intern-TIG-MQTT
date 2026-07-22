@@ -161,7 +161,15 @@
         }
     },
     {
-        "id": "5e1509aa250696b5",
+        "id": "3d7aa2cb75b8c013",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-dashboard": "3.6.6"
+        }
+    },
+    {
+        "id": "c56c91c4da3a6ce8",
         "type": "ui_spacer",
         "z": "rsa-tab-control",
         "name": "spacer",
@@ -171,7 +179,7 @@
         "height": 1
     },
     {
-        "id": "a0665d0e6554401b",
+        "id": "41a08b11678a937e",
         "type": "ui_spacer",
         "z": "rsa-tab-control",
         "name": "spacer",
@@ -181,7 +189,7 @@
         "height": 1
     },
     {
-        "id": "393466d14a597062",
+        "id": "8a72f0031727595b",
         "type": "ui_spacer",
         "z": "rsa-tab-control",
         "name": "spacer",
@@ -191,7 +199,7 @@
         "height": 1
     },
     {
-        "id": "1a4bf511576c0a39",
+        "id": "42b7fb4567351930",
         "type": "ui_spacer",
         "z": "rsa-tab-control",
         "name": "spacer",
@@ -201,7 +209,7 @@
         "height": 1
     },
     {
-        "id": "1d28b120b678dfde",
+        "id": "1df7e452b44df08a",
         "type": "ui_spacer",
         "z": "rsa-tab-control",
         "name": "spacer",
@@ -286,14 +294,14 @@
         ]
     },
     {
-        "id": "node-store-upload",
+        "id": "node-store-time-mode",
         "type": "change",
         "z": "rsa-tab-control",
-        "name": "Guardar upload",
+        "name": "Guardar timeMode",
         "rules": [
             {
                 "t": "set",
-                "p": "upload",
+                "p": "timeMode",
                 "pt": "flow",
                 "to": "payload",
                 "tot": "msg"
@@ -315,7 +323,7 @@
         "type": "function",
         "z": "rsa-tab-control",
         "name": "Build Command",
-        "func": "// 1. Recuperar valores del contexto\nconst targetId = flow.get('targetId') || 'broadcast';\nconst startDate = flow.get('startDate'); \nconst startTime = flow.get('startTime'); // Ahora sabemos que suele ser un número (milisegundos)\nconst duration = flow.get('duration') || 30; \nconst upload = flow.get('upload') !== undefined ? flow.get('upload') : true;\n\n// 2. Validaciones de seguridad\nif (!startDate || startTime === undefined) {\n    node.warn('⚠️ La Fecha y la Hora son obligatorias. Selecciónalas en el panel.');\n    return null;\n}\n\n// 3. Fusión de Fecha y Hora (El motor matemático)\nconst dt = new Date(startDate);\nlet hours = 0;\nlet minutes = 0;\n\nif (typeof startTime === 'number') {\n    // Si el dashboard envía milisegundos desde la medianoche\n    hours = Math.floor(startTime / 3600000);\n    minutes = Math.floor((startTime % 3600000) / 60000);\n} else if (typeof startTime === 'string' && startTime.includes(':')) {\n    // Fallback de seguridad por si algún navegador envía texto \"HH:mm\"\n    const parts = startTime.split(':');\n    hours = parseInt(parts[0], 10);\n    minutes = parseInt(parts[1], 10);\n} else {\n    node.warn('⚠️ Tipo de dato de hora desconocido: ' + (typeof startTime) + ' -> ' + startTime);\n    return null;\n}\n\ndt.setHours(hours);\ndt.setMinutes(minutes);\ndt.setSeconds(0); \n\n// 4. Formatear a YYYY-MM-DDZHH:MM:SS\nconst pad = (n) => String(n).padStart(2, '0');\nconst isoDate = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}Z${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;\n\n// 5. Construcción del JSON y publicación\nconst requestId = 'evt-' + Date.now().toString(36);\n\nmsg.payload = JSON.stringify({\n    start: isoDate,\n    duration: Number(duration),\n    upload: Boolean(upload),\n    request_id: requestId\n});\n\nmsg.topic = `rsa/seismic/smart/${targetId}/cmd/extract_event`;\nmsg.qos = 1;\n\nreturn msg;",
+        "func": "// 1. Recuperar valores del contexto\nconst targetId = flow.get('targetId') || 'broadcast';\nconst startDate = flow.get('startDate'); \nconst startTime = flow.get('startTime'); // Milisegundos desde la medianoche o HH:mm\nconst duration = flow.get('duration') || 30; \nconst timeMode = flow.get('timeMode') || 'LOCAL'; // 'LOCAL' (UTC-5) por defecto o 'UTC'\n\n// 2. Validaciones de seguridad\nif (!startDate || startTime === undefined) {\n    node.warn('⚠️ La Fecha y la Hora son obligatorias. Selecciónalas en el panel.');\n    return null;\n}\n\n// 3. Fusión de Fecha y Hora (El motor matemático)\nconst dt = new Date(startDate);\nlet hours = 0;\nlet minutes = 0;\n\nif (typeof startTime === 'number') {\n    // Si el dashboard envía milisegundos desde la medianoche\n    hours = Math.floor(startTime / 3600000);\n    minutes = Math.floor((startTime % 3600000) / 60000);\n} else if (typeof startTime === 'string' && startTime.includes(':')) {\n    // Fallback de seguridad por si algún navegador envía texto \"HH:mm\"\n    const parts = startTime.split(':');\n    hours = parseInt(parts[0], 10);\n    minutes = parseInt(parts[1], 10);\n} else {\n    node.warn('⚠️ Tipo de dato de hora desconocido: ' + (typeof startTime) + ' -> ' + startTime);\n    return null;\n}\n\n// 4. Formatear a YYYY-MM-DDZHH:MM:SS según zona horaria\nconst pad = (n) => String(n).padStart(2, '0');\nlet isoDate = '';\n\nif (timeMode === 'LOCAL') {\n    // Interpretado como hora local de Ecuador (UTC-5) -> Convertir a UTC\n    const year = dt.getFullYear();\n    const month = pad(dt.getMonth() + 1);\n    const day = pad(dt.getDate());\n    const hh = pad(hours);\n    const mm = pad(minutes);\n    \n    const localIsoStr = `${year}-${month}-${day}T${hh}:${mm}:00-05:00`;\n    const utcDt = new Date(localIsoStr);\n    \n    isoDate = `${utcDt.getUTCFullYear()}-${pad(utcDt.getUTCMonth() + 1)}-${pad(utcDt.getUTCDate())}Z${pad(utcDt.getUTCHours())}:${pad(utcDt.getUTCMinutes())}:${pad(utcDt.getUTCSeconds())}`;\n} else {\n    // Interpretado directamente como UTC\n    dt.setHours(hours);\n    dt.setMinutes(minutes);\n    dt.setSeconds(0);\n    \n    isoDate = `${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}Z${pad(dt.getHours())}:${pad(dt.getMinutes())}:${pad(dt.getSeconds())}`;\n}\n\n// 5. Construcción del JSON y publicación\nconst requestId = 'evt-' + Date.now().toString(36);\n\nmsg.payload = JSON.stringify({\n    start: isoDate,\n    duration: Number(duration),\n    upload: true,\n    delete_after_upload: true,\n    request_id: requestId\n});\n\nmsg.topic = `rsa/seismic/smart/${targetId}/cmd/extract_event`;\nmsg.qos = 1;\n\nreturn msg;",
         "outputs": 1,
         "timeout": "",
         "noerr": 0,
@@ -459,8 +467,8 @@
                 "type": "str"
             },
             {
-                "label": "DEV00",
-                "value": "DEV00",
+                "label": "DEV0",
+                "value": "DEV0",
                 "type": "str"
             },
             {
@@ -469,18 +477,18 @@
                 "type": "str"
             },
             {
-                "label": "CHA01",
-                "value": "CHA01",
+                "label": "CHA1",
+                "value": "CHA1",
                 "type": "str"
             },
             {
-                "label": "CHA02",
-                "value": "CHA02",
+                "label": "CHA2",
+                "value": "CHA2",
                 "type": "str"
             },
             {
-                "label": "TEN01",
-                "value": "TEN01",
+                "label": "TEN1",
+                "value": "TEN1",
                 "type": "str"
             }
         ],
@@ -497,36 +505,40 @@
         ]
     },
     {
-        "id": "node-upload-switch",
-        "type": "ui_switch",
+        "id": "node-timezone-select",
+        "type": "ui_dropdown",
         "z": "rsa-tab-control",
-        "name": "Upload",
-        "label": "Subir a Google Drive",
-        "tooltip": "Si está activado, la estación sube el evento extraído a Google Drive",
+        "name": "Zona Horaria",
+        "label": "Zona Horaria ",
+        "tooltip": "Selecciona si la fecha y hora ingresadas corresponden a Tiempo Local (UTC-5) o UTC",
+        "place": "Seleccionar...",
         "group": "rsa-ui-group-form",
-        "order": 9,
+        "order": 7,
         "width": 6,
         "height": 1,
         "passthru": true,
-        "decouple": "false",
-        "topic": "upload",
+        "multiple": false,
+        "options": [
+            {
+                "label": "📍 Tiempo Local",
+                "value": "LOCAL",
+                "type": "str"
+            },
+            {
+                "label": "🌐 Tiempo UTC",
+                "value": "UTC",
+                "type": "str"
+            }
+        ],
+        "payload": "",
+        "topic": "timeMode",
         "topicType": "str",
-        "style": "",
-        "onvalue": "true",
-        "onvalueType": "bool",
-        "onicon": "",
-        "oncolor": "",
-        "offvalue": "false",
-        "offvalueType": "bool",
-        "officon": "",
-        "offcolor": "",
-        "animate": true,
         "className": "",
         "x": 140,
         "y": 320,
         "wires": [
             [
-                "node-store-upload"
+                "node-store-time-mode"
             ]
         ]
     },
@@ -579,7 +591,7 @@
         "label": "Duracion (segundos)",
         "tooltip": "Duración del segmento a extraer",
         "group": "rsa-ui-group-form",
-        "order": 7,
+        "order": 9,
         "width": 6,
         "height": 1,
         "passthru": true,
@@ -668,13 +680,5 @@
         "wires": [
             []
         ]
-    },
-    {
-        "id": "3d7aa2cb75b8c013",
-        "type": "global-config",
-        "env": [],
-        "modules": {
-            "node-red-dashboard": "3.6.6"
-        }
     }
 ]
