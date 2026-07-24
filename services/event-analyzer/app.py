@@ -76,60 +76,83 @@ selected_option_label = st.sidebar.selectbox(
 )
 
 selected_event = event_options[selected_option_label]
-
-st.sidebar.markdown("---")
-st.sidebar.subheader("📡 Estaciones a Visualizar")
-
 available_stations = sorted(list(selected_event.stations.keys()))
-selected_stations = st.sidebar.multiselect(
-    "Filtrar Estaciones:",
-    options=available_stations,
-    default=available_stations
-)
+
+# Inicializar o actualizar el estado de la sesión cuando cambia el evento seleccionado
+if "current_event_id" not in st.session_state or st.session_state.current_event_id != selected_event.event_id:
+    st.session_state.current_event_id = selected_event.event_id
+    st.session_state.applied_stations = available_stations.copy()
+    st.session_state.applied_detrend = True
+    st.session_state.applied_bandpass = False
+    st.session_state.applied_freq_min = 0.5
+    st.session_state.applied_freq_max = 20.0
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("⚙️ Procesamiento de Señal (DSP)")
 
-apply_detrend = st.sidebar.checkbox(
-    "Remover Tendencia / Media (Detrend)",
-    value=True,
-    help="Remueve la media de la señal y la tendencia lineal antes del desplegado."
-)
+# Formulario 1: Selección y confirmación de estaciones a visualizar
+with st.sidebar.form("stations_form"):
+    st.subheader("📡 Estaciones a Visualizar")
+    stations_draft = st.multiselect(
+        "Filtrar Estaciones:",
+        options=available_stations,
+        default=[s for s in st.session_state.applied_stations if s in available_stations]
+    )
+    btn_apply_stations = st.form_submit_button("✅ Aplicar Selección de Estaciones", use_container_width=True)
+    if btn_apply_stations:
+        st.session_state.applied_stations = stations_draft
 
-apply_bandpass = st.sidebar.checkbox(
-    "Filtro Pasabanda Butterworth",
-    value=False,
-    help="Aplica un filtro pasabanda de 4to orden con fase cero."
-)
+st.sidebar.markdown("---")
 
-freq_min, freq_max = 0.5, 20.0
-if apply_bandpass:
-    col_f1, col_f2 = st.sidebar.columns(2)
-    freq_min = col_f1.number_input("F. Mín (Hz)", min_value=0.01, max_value=20.0, value=0.5, step=0.1)
-    freq_max = col_f2.number_input("F. Máx (Hz)", min_value=0.1, max_value=100.0, value=20.0, step=1.0)
+# Formulario 2: Configuración y confirmación de Filtros DSP
+with st.sidebar.form("dsp_form"):
+    st.subheader("⚙️ Procesamiento de Señal (DSP)")
+
+    detrend_draft = st.checkbox(
+        "Remover Tendencia / Media (Detrend)",
+        value=st.session_state.applied_detrend,
+        help="Remueve la media de la señal y la tendencia lineal antes del desplegado."
+    )
+
+    bandpass_draft = st.checkbox(
+        "Filtro Pasabanda Butterworth",
+        value=st.session_state.applied_bandpass,
+        help="Aplica un filtro pasabanda de 4to orden con fase cero."
+    )
+
+    col_f1, col_f2 = st.columns(2)
+    freq_min_draft = col_f1.number_input("F. Mín (Hz)", min_value=0.01, max_value=20.0, value=st.session_state.applied_freq_min, step=0.1)
+    freq_max_draft = col_f2.number_input("F. Máx (Hz)", min_value=0.1, max_value=100.0, value=st.session_state.applied_freq_max, step=1.0)
+
+    btn_apply_dsp = st.form_submit_button("⚡ Aplicar Filtros DSP", use_container_width=True)
+    if btn_apply_dsp:
+        st.session_state.applied_detrend = detrend_draft
+        st.session_state.applied_bandpass = bandpass_draft
+        st.session_state.applied_freq_min = freq_min_draft
+        st.session_state.applied_freq_max = freq_max_draft
 
 # ==============================================================================
 # PANEL PRINCIPAL — MÉTRICAS Y GRÁFICOS
 # ==============================================================================
 
-# Métricas de cabecera
+# Métricas de cabecera usando los parámetros aplicados confirmados
 col_m1, col_m2, col_m3, col_m4 = st.columns(4)
 
+active_stations = st.session_state.applied_stations
 col_m1.metric("📍 Evento Regional", selected_event.event_id, format_utc_display(selected_event.reference_time_utc))
-col_m2.metric("📡 Estaciones Seleccionadas", f"{len(selected_stations)} / {selected_event.n_stations}", f"Total en red: {len(available_stations)}")
+col_m2.metric("📡 Estaciones Seleccionadas", f"{len(active_stations)} / {selected_event.n_stations}", f"Total en red: {len(available_stations)}")
 col_m3.metric("⏱️ Duración del Registro", format_duration(selected_event.duration_seconds))
 
-# Generar gráfico Plotly mediante WaveformVisualizer
+# Generar gráfico Plotly mediante WaveformVisualizer usando la configuración confirmada
 visualizer = WaveformVisualizer()
 
 with st.spinner("Cargando y procesando trazas sísmicas MiniSEED..."):
     fig, metrics = visualizer.create_event_figure(
         regional_event=selected_event,
-        selected_stations=selected_stations,
-        apply_detrend=apply_detrend,
-        apply_bandpass=apply_bandpass,
-        freq_min=freq_min,
-        freq_max=freq_max
+        selected_stations=active_stations,
+        apply_detrend=st.session_state.applied_detrend,
+        apply_bandpass=st.session_state.applied_bandpass,
+        freq_min=st.session_state.applied_freq_min,
+        freq_max=st.session_state.applied_freq_max
     )
 
 col_m4.metric("📈 PGA Z Estimado", f"{metrics.get('pga_z', 0.0):.2f}", "Amplitud Máxima (Counts)")
@@ -137,7 +160,7 @@ col_m4.metric("📈 PGA Z Estimado", f"{metrics.get('pga_z', 0.0):.2f}", "Amplit
 st.markdown("---")
 
 if fig is None:
-    st.warning("Selecciona al menos una estación en la barra lateral para generar la visualización.")
+    st.warning("Selecciona al menos una estación y presiona '✅ Aplicar Selección de Estaciones' para generar la visualización.")
 else:
     st.plotly_chart(fig, use_container_width=True)
 
