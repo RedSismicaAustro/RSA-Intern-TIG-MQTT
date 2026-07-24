@@ -122,6 +122,25 @@ services:
     networks:
       - monitoring
 
+  # ============================================================================
+  # Event Analyzer - Visualizador Web de Eventos Sísmicos (Fase 1)
+  # ============================================================================
+  event-analyzer:
+    build:
+      context: ../event-analyzer
+      dockerfile: Dockerfile
+    container_name: rsa-event-analyzer
+    restart: unless-stopped
+    ports:
+      - "8501:8501"
+    volumes:
+      - /home/rsa/datos_estaciones_drive:/data/events:ro
+    environment:
+      - DATA_DIR=/data/events
+      - TZ=America/Guayaquil
+    networks:
+      - monitoring
+
 # ==============================================================================
 # Redes
 # ==============================================================================
