@@ -11,7 +11,7 @@ services:
       - TZ=America/Guayaquil
       - MQTT_BROKER=${MQTT_BROKER}
     volumes:
-      - /home/rsa/data/nodered:/data
+      - ${DATA_DIR}/nodered:/data
     networks:
       - monitoring
 

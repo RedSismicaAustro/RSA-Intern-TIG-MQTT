@@ -30,8 +30,8 @@ services:
       - DOCKER_INFLUXDB_INIT_RETENTION=${INFLUXDB_RETENTION}
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${INFLUXDB_TOKEN}
     volumes:
-      - /home/rsa/data/influxdb/data:/var/lib/influxdb2
-      - /home/rsa/data/influxdb/config:/etc/influxdb2
+      - ${DATA_DIR}/influxdb/data:/var/lib/influxdb2
+      - ${DATA_DIR}/influxdb/config:/etc/influxdb2
     networks:
       - monitoring
     healthcheck:
@@ -93,7 +93,7 @@ services:
       - INFLUXDB_BUCKET=${INFLUXDB_BUCKET}
       - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
     volumes:
-      - /home/rsa/data/grafana:/var/lib/grafana
+      - ${DATA_DIR}/grafana:/var/lib/grafana
       # Provisioning automático de datasources y dashboards
       - ../grafana/provisioning:/etc/grafana/provisioning:ro
     networks:
@@ -134,7 +134,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
-      - /home/rsa/datos_estaciones_drive:/data/events:ro
+      - ${DRIVE_DIR}:/data/events:ro
     environment:
       - DATA_DIR=/data/events
       - TZ=America/Guayaquil
