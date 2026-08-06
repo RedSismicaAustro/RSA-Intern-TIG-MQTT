@@ -134,6 +134,7 @@ services:
     ports:
       - "8501:8501"
     volumes:
+      - ../event-analyzer:/app
       - ${DRIVE_DIR}:/data/events:ro
     environment:
       - DATA_DIR=/data/events

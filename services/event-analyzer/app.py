@@ -61,7 +61,6 @@ if st.sidebar.button("🔄 Recargar Índice de Eventos"):
     st.rerun()
 
 st.sidebar.markdown("---")
-st.sidebar.subheader("📅 Selección de Evento Regional")
 
 # Opciones formateadas para el dropdown de eventos
 event_options = {
@@ -69,13 +68,32 @@ event_options = {
     for evt in events
 }
 
-selected_option_label = st.sidebar.selectbox(
-    "Selecciona un Evento Regional:",
-    options=list(event_options.keys()),
-    index=0
-)
+if "applied_event_label" not in st.session_state:
+    st.session_state.applied_event_label = None
 
-selected_event = event_options[selected_option_label]
+# Formulario 0: Selección y confirmación de evento regional
+with st.sidebar.form("event_form"):
+    st.subheader("📅 Selección de Evento Regional")
+    
+    initial_index = 0
+    if st.session_state.applied_event_label in event_options:
+        initial_index = list(event_options.keys()).index(st.session_state.applied_event_label)
+        
+    event_draft = st.selectbox(
+        "Selecciona un Evento Regional:",
+        options=list(event_options.keys()),
+        index=initial_index
+    )
+    btn_apply_event = st.form_submit_button("✅ Aplicar Selección de Eventos", use_container_width=True)
+    if btn_apply_event:
+        st.session_state.applied_event_label = event_draft
+
+# Si aún no se ha aplicado ningún evento (estado inicial)
+if st.session_state.applied_event_label is None:
+    st.info("👈 Por favor selecciona un evento regional en el panel de control y presiona '**✅ Aplicar Selección de Eventos**' para comenzar.")
+    st.stop()
+
+selected_event = event_options[st.session_state.applied_event_label]
 available_stations = sorted(list(selected_event.stations.keys()))
 
 # Inicializar o actualizar el estado de la sesión cuando cambia el evento seleccionado
