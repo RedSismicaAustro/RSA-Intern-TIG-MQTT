@@ -20,7 +20,7 @@ temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp,
 - Dependencias: `services/event-analyzer/requirements.txt`
 - Integración Docker Compose: `services/docker-unified/docker-compose.yml`
 
-**LOC**: `app.py`: 160 | `reader.py`: 86 | `event_grouper.py`: 90 | `visualizer.py`: 165 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 16  
+**LOC**: `app.py`: 227 | `reader.py`: 86 | `event_grouper.py`: 90 | `visualizer.py`: 191 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 16  
 **Lenguaje/Formato**: Python 3.11, Streamlit UI, TOML, Dockerfile, YAML  
 **Dependencias/Librerías**: `obspy>=1.4.0`, `streamlit>=1.30.0`, `plotly>=5.18.0`, `pandas>=2.0.0`, `numpy>=1.24.0`  
 **Proceso**: Servicio contenedorizado (`rsa-event-analyzer`) expuesto en el puerto `8501`, parte del stack `docker-unified` en la red `rsa_network` (`monitoring`).
@@ -39,20 +39,22 @@ El sistema opera como una tubería (Pipeline) de lectura, agrupamiento y visuali
    - Ordena las trazas cronológicamente por `start_utc`.
    - Agrupa trazas de distintas estaciones cuyo tiempo de inicio coincida dentro de una ventana configurable (30 segundos).
    - Genera identificadores únicos de evento (`EVT-YYYYMMDD-HHMMSS`) y mantiene referencias ligeras a `EventFile` (*Lazy Loading*).
-3. **Interfaz de Usuario Streamlit (`app.py`)**:
-   - Presenta una barra lateral con selector de evento regional, filtro de estaciones participantes y controles de procesamiento DSP (detrending y filtro pasabanda Butterworth).
-   - Incluye formularios independientes (`st.form`) con botones de confirmación (`✅ Aplicar Selección de Estaciones` y `⚡ Aplicar Filtros DSP`) para evitar renderizados automáticos innecesarios.
-4. **Carga Bajo Demanda y Procesamiento DSP (`visualizer.py`)**:
+3. **Interfaz de Usuario Streamlit con Calendario (`app.py`)**:
+   - Presenta una barra lateral con selección de evento mediante calendario (`st.date_input`) que filtra dinámicamente el desplegable de eventos según el día seleccionado.
+   - Implementa un estado inicial en blanco (`st.session_state.applied_event_label = None` con `st.stop()`) para prevenir la renderización automática o cargas pesadas al iniciar la aplicación o cambiar controles.
+   - Incluye el botón `✅ Aplicar Selección de Eventos` para gatillar el cálculo y graficado, además de formularios independientes (`st.form`) para selección de estaciones y filtros DSP.
+4. **Carga Bajo Demanda, DSP y Diezmado Dinámico (`visualizer.py`)**:
    - Al seleccionar y confirmar un evento, invoca `regional_event.load_streams()`, cargando con ObsPy únicamente las trazas MiniSEED de las estaciones requeridas.
    - Aplica `st_copy.detrend("demean")` y `st_copy.detrend("linear")` para remover tendencia/media.
    - Aplica filtro pasabanda Butterworth de 4to orden con fase cero (`tr.filter("bandpass", ...)`).
+   - **Diezmado Dinámico (Downsampling)**: Acota el renderizado a un máximo de `MAX_POINTS_PER_TRACE = 3000` puntos por traza mediante slicing eficiente en NumPy (`data[::step]`), evitando errores de tamaño de mensaje WebSocket (`MessageSizeError` > 200MB) y garantizando tiempos de respuesta instantáneos sin degradar los cálculos DSP.
    - Construye una figura Plotly `make_subplots` multi-canal (Z, N, E) alineada temporalmente en UTC con paleta de colores por estación e interacción *hover*.
 
 ```mermaid
 graph TD
     subgraph Google Drive Mount (/data/events)
         DriveFiles[Archivos .mseed en Subcarpetas de Estaciones]
-    </div>
+    end
 
     subgraph Core Ingestion (Fast Scanning)
         DriveFiles -->|1. Listado de Nombres| Reader[MseedReader: reader.py]
@@ -62,8 +64,8 @@ graph TD
     end
 
     subgraph Interface & State (app.py)
-        RegionalEvents -->|5. Muestra Lista| Dropdown[Sidebar: Selector de Evento]
-        Dropdown -->|6. Evento Seleccionado| State[st.session_state & Formularios]
+        RegionalEvents -->|5. Filtrado por Fecha| Calendar[st.date_input & Dropdown por Día]
+        Calendar -->|6. Confirmación ✅| State[st.session_state & Formularios]
         Form1[Form: Estaciones Seleccionadas] -->|Confirmación ✅| State
         Form2[Form: Filtros DSP] -->|Confirmación ⚡| State
     end
@@ -71,10 +73,11 @@ graph TD
     subgraph Pipeline & Rendering (visualizer.py)
         State -->|7. Lazy Loading por Demanda| Load[load_streams: ObsPy Read]
         Load -->|8. Detrend & Pasabanda| DSP[Procesamiento DSP]
-        DSP -->|9. Render Subplots UTC| Plotly[Plotly Multi-trace Subplots]
+        DSP -->|9. Downsampling max 3k pts| Decimate[Diezmado NumPy: data::step]
+        Decimate -->|10. Render Subplots UTC| Plotly[Plotly Multi-trace Subplots]
     end
 
-    Plotly -->|10. Gráfico Interactivo| Operador((Operador / Sismólogo en :8501))
+    Plotly -->|11. Gráfico Interactivo Rápido| Operador((Operador / Sismólogo en :8501))
 ```
 
 ---
@@ -90,6 +93,7 @@ graph TD
 
 ### Volúmenes de Persistencia e Integración
 - `/home/rsa/datos_estaciones_drive:/data/events:ro`: Montaje en modo **solo lectura** del directorio de Google Drive mantenido por el servicio `rclone`.
+- `../event-analyzer:/app`: Montaje bind del código fuente local para reflejar actualizaciones de desarrollo en tiempo real.
 
 ---
 
@@ -102,7 +106,7 @@ graph TD
 | `EventGrouper` | `src/core/event_grouper.py` | Motor de coincidencia temporal UTC que agrupa trazas multiestación en objetos `RegionalEvent`. |
 | `RegionalEvent` | `src/core/event_grouper.py` | Contenedor de evento regional con cálculo de estación, duración y método `load_streams()` para ObsPy. |
 | `BaseAnalysisModule` | `src/modules/base.py` | Clase abstracta para los módulos del pipeline. Define `get_name()` y `process_event(...)`. |
-| `WaveformVisualizer` | `src/modules/visualizer.py` | Hereda de `BaseAnalysisModule`. Aplica DSP (`detrend("demean")` / `filter("bandpass")`) y genera gráficos Plotly interactivos. |
+| `WaveformVisualizer` | `src/modules/visualizer.py` | Hereda de `BaseAnalysisModule`. Aplica DSP, diezmado dinámico (`MAX_POINTS_PER_TRACE=3000`) y genera gráficos Plotly interactivos. |
 | `time_utils.py` | `src/utils/time_utils.py` | Funciones auxiliares para formateo de tiempos UTC/locales y duraciones. |
 
 ---
@@ -121,7 +125,8 @@ El servicio está integrado como la 5ta unidad del stack unificado:
     ports:
       - "8501:8501"
     volumes:
-      - /home/rsa/datos_estaciones_drive:/data/events:ro
+      - ../event-analyzer:/app
+      - ${DRIVE_DIR}:/data/events:ro
     environment:
       - DATA_DIR=/data/events
       - TZ=America/Guayaquil
