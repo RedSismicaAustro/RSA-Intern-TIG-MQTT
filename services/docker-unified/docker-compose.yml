@@ -133,12 +133,15 @@ services:
     restart: unless-stopped
     ports:
       - "8501:8501"
+      - "8050:8050"
     volumes:
       - ../event-analyzer:/app
       - ${DRIVE_DIR}:/data/events:ro
     environment:
       - DATA_DIR=/data/events
       - TZ=America/Guayaquil
+      - RESAMPLER_HOST=${RESAMPLER_HOST:-ubuntu-server}
+
     networks:
       - monitoring
 

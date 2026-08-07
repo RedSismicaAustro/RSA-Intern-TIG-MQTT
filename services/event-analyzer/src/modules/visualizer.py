@@ -6,6 +6,12 @@ from plotly.subplots import make_subplots
 from src.core.event_grouper import RegionalEvent
 from src.modules.base import BaseAnalysisModule
 
+try:
+    from plotly_resampler import FigureResampler
+    HAS_RESAMPLER = True
+except ImportError:
+    HAS_RESAMPLER = False
+
 logger = logging.getLogger(__name__)
 
 STATION_COLORS = [
@@ -112,13 +118,18 @@ class WaveformVisualizer(BaseAnalysisModule):
         n_rows = len(traces_to_plot)
         subplot_titles = [f"Estación: {st} | Canal: {tr.stats.channel}" for st, tr in traces_to_plot]
 
-        fig = make_subplots(
+        sub_fig = make_subplots(
             rows=n_rows,
             cols=1,
             shared_xaxes=True,
             vertical_spacing=max(0.01, min(0.04, 1.0 / n_rows)),
             subplot_titles=subplot_titles
         )
+
+        if HAS_RESAMPLER:
+            fig = FigureResampler(sub_fig, default_n_shown_samples=3000)
+        else:
+            fig = sub_fig
 
         pga_z_max = 0.0
         MAX_POINTS_PER_TRACE = 3000
@@ -137,34 +148,55 @@ class WaveformVisualizer(BaseAnalysisModule):
 
             color = station_color_map.get(station, "#FF6B35")
 
-            # Decimación dinámica para renderizado eficiente en el navegador
-            if n_points > MAX_POINTS_PER_TRACE:
-                step = n_points // MAX_POINTS_PER_TRACE
-                times_sec_plot = times_sec[::step]
-                data_plot = data[::step]
+            if HAS_RESAMPLER:
+                # Usar resampler dinámico con datos crudos completos
+                times_utc = [start_utc + timedelta(seconds=float(t)) for t in times_sec]
+                fig.add_trace(
+                    go.Scatter(
+                        mode="lines",
+                        name=f"{station} ({tr.stats.channel})",
+                        line=dict(color=color, width=1.2),
+                        hovertemplate=(
+                            f"<b>Estación: {station}</b><br>"
+                            f"Canal: {tr.stats.channel}<br>"
+                            "Hora UTC: %{x|%H:%M:%S.%L}<br>"
+                            "Amplitud: %{y:.4f}<extra></extra>"
+                        )
+                    ),
+                    hf_x=times_utc,
+                    hf_y=data,
+                    row=idx,
+                    col=1
+                )
             else:
-                times_sec_plot = times_sec
-                data_plot = data
+                # Fallback: Decimación dinámica estática
+                if n_points > MAX_POINTS_PER_TRACE:
+                    step = n_points // MAX_POINTS_PER_TRACE
+                    times_sec_plot = times_sec[::step]
+                    data_plot = data[::step]
+                else:
+                    times_sec_plot = times_sec
+                    data_plot = data
 
-            times_utc_plot = [start_utc + timedelta(seconds=float(t)) for t in times_sec_plot]
+                times_utc_plot = [start_utc + timedelta(seconds=float(t)) for t in times_sec_plot]
 
-            fig.add_trace(
-                go.Scatter(
-                    x=times_utc_plot,
-                    y=data_plot,
-                    mode="lines",
-                    name=f"{station} ({tr.stats.channel})",
-                    line=dict(color=color, width=1.2),
-                    hovertemplate=(
-                        f"<b>Estación: {station}</b><br>"
-                        f"Canal: {tr.stats.channel}<br>"
-                        "Hora UTC: %{x|%H:%M:%S.%L}<br>"
-                        "Amplitud: %{y:.4f}<extra></extra>"
-                    )
-                ),
-                row=idx,
-                col=1
-            )
+                fig.add_trace(
+                    go.Scatter(
+                        x=times_utc_plot,
+                        y=data_plot,
+                        mode="lines",
+                        name=f"{station} ({tr.stats.channel})",
+                        line=dict(color=color, width=1.2),
+                        hovertemplate=(
+                            f"<b>Estación: {station}</b><br>"
+                            f"Canal: {tr.stats.channel}<br>"
+                            "Hora UTC: %{x|%H:%M:%S.%L}<br>"
+                            "Amplitud: %{y:.4f}<extra></extra>"
+                        )
+                    ),
+                    row=idx,
+                    col=1
+                )
 
             fig.update_yaxes(title_text="Amplitud", row=idx, col=1)
 

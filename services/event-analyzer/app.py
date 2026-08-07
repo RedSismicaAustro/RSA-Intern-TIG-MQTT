@@ -5,6 +5,13 @@ from src.core.event_grouper import EventGrouper
 from src.modules.visualizer import WaveformVisualizer
 from src.utils.time_utils import format_utc_display, format_duration
 
+try:
+    from plotly_resampler import register_plotly_resampler
+    resampler_host = os.environ.get("RESAMPLER_HOST", "ubuntu-server")
+    register_plotly_resampler(mode="Dash", port=8050, host="0.0.0.0")
+except Exception:
+    pass
+
 st.set_page_config(
     page_title="RSA — Event Analyzer",
     page_icon="🌋",
