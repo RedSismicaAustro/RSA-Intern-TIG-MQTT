@@ -61,39 +61,73 @@ if st.sidebar.button("🔄 Recargar Índice de Eventos"):
     st.rerun()
 
 st.sidebar.markdown("---")
+st.sidebar.subheader("📅 Selección de Evento Regional")
 
-# Opciones formateadas para el dropdown de eventos
-event_options = {
+# Mapeos globales y agrupación por fecha
+all_event_options = {
     f"{evt.event_id} | {format_utc_display(evt.reference_time_utc)} ({evt.n_stations} est.)": evt
     for evt in events
 }
 
+events_by_date = {}
+for evt in events:
+    evt_date = evt.reference_time_utc.date()
+    if evt_date not in events_by_date:
+        events_by_date[evt_date] = []
+    events_by_date[evt_date].append(evt)
+
+unique_dates = sorted(list(events_by_date.keys()))
+min_date = unique_dates[0] if unique_dates else None
+max_date = unique_dates[-1] if unique_dates else None
+
+if unique_dates:
+    st.sidebar.caption(f"🗓️ Fechas registradas: **{min_date.strftime('%Y-%m-%d')}** a **{max_date.strftime('%Y-%m-%d')}** ({len(unique_dates)} días con eventos)")
+
+# Widget de Calendario
+selected_date = st.sidebar.date_input(
+    "1. Selecciona la Fecha:",
+    value=max_date if max_date else None,
+    min_value=min_date,
+    max_value=max_date
+)
+
+# Eventos para la fecha seleccionada
+day_events = events_by_date.get(selected_date, [])
+
+if not day_events:
+    st.sidebar.warning(f"No hay eventos registrados para el {selected_date}.")
+    day_event_options = {}
+else:
+    day_event_options = {
+        f"{evt.event_id} | {format_utc_display(evt.reference_time_utc)} ({evt.n_stations} est.)": evt
+        for evt in day_events
+    }
+
 if "applied_event_label" not in st.session_state:
     st.session_state.applied_event_label = None
 
-# Formulario 0: Selección y confirmación de evento regional
-with st.sidebar.form("event_form"):
-    st.subheader("📅 Selección de Evento Regional")
-    
-    initial_index = 0
-    if st.session_state.applied_event_label in event_options:
-        initial_index = list(event_options.keys()).index(st.session_state.applied_event_label)
-        
-    event_draft = st.selectbox(
-        "Selecciona un Evento Regional:",
-        options=list(event_options.keys()),
-        index=initial_index
+if day_event_options:
+    selected_option_label = st.sidebar.selectbox(
+        "2. Selecciona un Evento del Día:",
+        options=list(day_event_options.keys()),
+        index=0
     )
-    btn_apply_event = st.form_submit_button("✅ Aplicar Selección de Eventos", use_container_width=True)
+    btn_apply_event = st.sidebar.button("✅ Aplicar Selección de Eventos", use_container_width=True)
     if btn_apply_event:
-        st.session_state.applied_event_label = event_draft
+        st.session_state.applied_event_label = selected_option_label
+else:
+    st.sidebar.button("✅ Aplicar Selección de Eventos", use_container_width=True, disabled=True)
+
+# Validar si el evento aplicado existe en el catálogo global
+if st.session_state.applied_event_label not in all_event_options:
+    st.session_state.applied_event_label = None
 
 # Si aún no se ha aplicado ningún evento (estado inicial)
 if st.session_state.applied_event_label is None:
-    st.info("👈 Por favor selecciona un evento regional en el panel de control y presiona '**✅ Aplicar Selección de Eventos**' para comenzar.")
+    st.info("👈 Por favor selecciona una fecha y un evento en el panel de control y presiona '**✅ Aplicar Selección de Eventos**' para comenzar.")
     st.stop()
 
-selected_event = event_options[st.session_state.applied_event_label]
+selected_event = all_event_options[st.session_state.applied_event_label]
 available_stations = sorted(list(selected_event.stations.keys()))
 
 # Inicializar o actualizar el estado de la sesión cuando cambia el evento seleccionado
