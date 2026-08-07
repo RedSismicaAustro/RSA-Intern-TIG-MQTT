@@ -121,14 +121,15 @@ class WaveformVisualizer(BaseAnalysisModule):
         )
 
         pga_z_max = 0.0
+        MAX_POINTS_PER_TRACE = 3000
 
         for idx, (station, tr) in enumerate(traces_to_plot, start=1):
             start_utc = tr.stats.starttime.datetime
             times_sec = tr.times()
-            times_utc = [start_utc + timedelta(seconds=float(t)) for t in times_sec]
-
             data = tr.data
-            max_amp = float(np.max(np.abs(data))) if len(data) > 0 else 0.0
+            n_points = len(data)
+
+            max_amp = float(np.max(np.abs(data))) if n_points > 0 else 0.0
 
             if tr.stats.channel.endswith("Z") or tr.stats.channel.endswith("z"):
                 if max_amp > pga_z_max:
@@ -136,10 +137,21 @@ class WaveformVisualizer(BaseAnalysisModule):
 
             color = station_color_map.get(station, "#FF6B35")
 
+            # Decimación dinámica para renderizado eficiente en el navegador
+            if n_points > MAX_POINTS_PER_TRACE:
+                step = n_points // MAX_POINTS_PER_TRACE
+                times_sec_plot = times_sec[::step]
+                data_plot = data[::step]
+            else:
+                times_sec_plot = times_sec
+                data_plot = data
+
+            times_utc_plot = [start_utc + timedelta(seconds=float(t)) for t in times_sec_plot]
+
             fig.add_trace(
                 go.Scatter(
-                    x=times_utc,
-                    y=data,
+                    x=times_utc_plot,
+                    y=data_plot,
                     mode="lines",
                     name=f"{station} ({tr.stats.channel})",
                     line=dict(color=color, width=1.2),
