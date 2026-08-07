@@ -20,10 +20,10 @@ temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp,
 - Dependencias: `services/event-analyzer/requirements.txt`
 - Integración Docker Compose: `services/docker-unified/docker-compose.yml`
 
-**LOC**: `app.py`: 227 | `reader.py`: 86 | `event_grouper.py`: 90 | `visualizer.py`: 191 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 16  
+**LOC**: `app.py`: 234 | `reader.py`: 86 | `event_grouper.py`: 90 | `visualizer.py`: 234 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 16  
 **Lenguaje/Formato**: Python 3.11, Streamlit UI, TOML, Dockerfile, YAML  
-**Dependencias/Librerías**: `obspy>=1.4.0`, `streamlit>=1.30.0`, `plotly>=5.18.0`, `pandas>=2.0.0`, `numpy>=1.24.0`  
-**Proceso**: Servicio contenedorizado (`rsa-event-analyzer`) expuesto en el puerto `8501`, parte del stack `docker-unified` en la red `rsa_network` (`monitoring`).
+**Dependencias/Librerías**: `obspy>=1.4.0`, `streamlit>=1.30.0`, `plotly>=5.18.0`, `pandas>=2.0.0`, `numpy>=1.24.0`, `plotly-resampler>=0.9.1`  
+**Proceso**: Servicio contenedorizado (`rsa-event-analyzer`) expuesto en el puerto `8501` (Streamlit) y `8050` (Resampler Dash), parte del stack `docker-unified` en la red `rsa_network` (`monitoring`).
 
 ---
 
@@ -41,13 +41,14 @@ El sistema opera como una tubería (Pipeline) de lectura, agrupamiento y visuali
    - Genera identificadores únicos de evento (`EVT-YYYYMMDD-HHMMSS`) y mantiene referencias ligeras a `EventFile` (*Lazy Loading*).
 3. **Interfaz de Usuario Streamlit con Calendario (`app.py`)**:
    - Presenta una barra lateral con selección de evento mediante calendario (`st.date_input`) que filtra dinámicamente el desplegable de eventos según el día seleccionado.
+   - Registra al inicio `register_plotly_resampler(mode="Dash", port=8050, host="0.0.0.0")` para interceptar gráficos Plotly y enlazarlos al micro-servidor Dash en puerto 8050.
    - Implementa un estado inicial en blanco (`st.session_state.applied_event_label = None` con `st.stop()`) para prevenir la renderización automática o cargas pesadas al iniciar la aplicación o cambiar controles.
    - Incluye el botón `✅ Aplicar Selección de Eventos` para gatillar el cálculo y graficado, además de formularios independientes (`st.form`) para selección de estaciones y filtros DSP.
-4. **Carga Bajo Demanda, DSP y Diezmado Dinámico (`visualizer.py`)**:
+4. **Carga Bajo Demanda, DSP y Resampling Dinámico en Alta Resolución (`visualizer.py`)**:
    - Al seleccionar y confirmar un evento, invoca `regional_event.load_streams()`, cargando con ObsPy únicamente las trazas MiniSEED de las estaciones requeridas.
    - Aplica `st_copy.detrend("demean")` y `st_copy.detrend("linear")` para remover tendencia/media.
    - Aplica filtro pasabanda Butterworth de 4to orden con fase cero (`tr.filter("bandpass", ...)`).
-   - **Diezmado Dinámico (Downsampling)**: Acota el renderizado a un máximo de `MAX_POINTS_PER_TRACE = 3000` puntos por traza mediante slicing eficiente en NumPy (`data[::step]`), evitando errores de tamaño de mensaje WebSocket (`MessageSizeError` > 200MB) y garantizando tiempos de respuesta instantáneos sin degradar los cálculos DSP.
+   - **Resampling Dinámico (`plotly-resampler`)**: Enuelve la figura en `FigureResampler(sub_fig, default_n_shown_samples=3000)` inyectando trazas crudas completas mediante `hf_x` y `hf_y`. Mantiene la vista inicial diezmada a 3000 puntos (evitando `MessageSizeError` > 200MB) y recalcula dinámicamente muestras a resolución nativa de 100-200 Hz cuando el usuario aplica zoom para la picada exacta de ondas P y S.
    - Construye una figura Plotly `make_subplots` multi-canal (Z, N, E) alineada temporalmente en UTC con paleta de colores por estación e interacción *hover*.
 
 ```mermaid
@@ -73,11 +74,11 @@ graph TD
     subgraph Pipeline & Rendering (visualizer.py)
         State -->|7. Lazy Loading por Demanda| Load[load_streams: ObsPy Read]
         Load -->|8. Detrend & Pasabanda| DSP[Procesamiento DSP]
-        DSP -->|9. Downsampling max 3k pts| Decimate[Diezmado NumPy: data::step]
-        Decimate -->|10. Render Subplots UTC| Plotly[Plotly Multi-trace Subplots]
+        DSP -->|9. FigureResampler hf_x/hf_y| Resampler[Resampling Dinámico 3k pts]
+        Resampler -->|10. Callback Zoom AJAX puerto 8050| Plotly[Plotly Multi-trace Subplots Alta Res]
     end
 
-    Plotly -->|11. Gráfico Interactivo Rápido| Operador((Operador / Sismólogo en :8501))
+    Plotly -->|11. Gráfico Interactivo con Zoom Nativo| Operador((Operador / Sismólogo en :8501))
 ```
 
 ---
@@ -87,9 +88,11 @@ graph TD
 ### Variables del Entorno Docker (`docker-compose.yml`)
 - `DATA_DIR=/data/events`: Ruta interna dentro del contenedor donde se montan las trazas sísmicas.
 - `TZ=America/Guayaquil`: Zona horaria para concordancia de logs locales.
+- `RESAMPLER_HOST=ubuntu-server`: Hostname/IP de la LAN asignado para los callbacks de zoom de `plotly-resampler`.
 
 ### Puertos Expuestos
 - `8501:8501`: Puerto nativo para acceder a la aplicación web Streamlit.
+- `8050:8050`: Puerto nativo del micro-servidor Dash para callbacks de zoom en tiempo real de `plotly-resampler`.
 
 ### Volúmenes de Persistencia e Integración
 - `/home/rsa/datos_estaciones_drive:/data/events:ro`: Montaje en modo **solo lectura** del directorio de Google Drive mantenido por el servicio `rclone`.
@@ -106,7 +109,7 @@ graph TD
 | `EventGrouper` | `src/core/event_grouper.py` | Motor de coincidencia temporal UTC que agrupa trazas multiestación en objetos `RegionalEvent`. |
 | `RegionalEvent` | `src/core/event_grouper.py` | Contenedor de evento regional con cálculo de estación, duración y método `load_streams()` para ObsPy. |
 | `BaseAnalysisModule` | `src/modules/base.py` | Clase abstracta para los módulos del pipeline. Define `get_name()` y `process_event(...)`. |
-| `WaveformVisualizer` | `src/modules/visualizer.py` | Hereda de `BaseAnalysisModule`. Aplica DSP, diezmado dinámico (`MAX_POINTS_PER_TRACE=3000`) y genera gráficos Plotly interactivos. |
+| `WaveformVisualizer` | `src/modules/visualizer.py` | Hereda de `BaseAnalysisModule`. Aplica DSP, `FigureResampler` (3000 pts iniciales con zoom en alta resolución) y genera gráficos Plotly. |
 | `time_utils.py` | `src/utils/time_utils.py` | Funciones auxiliares para formateo de tiempos UTC/locales y duraciones. |
 
 ---
@@ -124,12 +127,14 @@ El servicio está integrado como la 5ta unidad del stack unificado:
     restart: unless-stopped
     ports:
       - "8501:8501"
+      - "8050:8050"
     volumes:
       - ../event-analyzer:/app
       - ${DRIVE_DIR}:/data/events:ro
     environment:
       - DATA_DIR=/data/events
       - TZ=America/Guayaquil
+      - RESAMPLER_HOST=${RESAMPLER_HOST:-ubuntu-server}
     networks:
       - monitoring
 ```
