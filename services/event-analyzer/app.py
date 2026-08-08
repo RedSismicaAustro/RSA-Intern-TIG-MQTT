@@ -95,8 +95,8 @@ selected_date = st.sidebar.date_input(
     max_value=max_date
 )
 
-# Eventos para la fecha seleccionada
-day_events = events_by_date.get(selected_date, [])
+# Eventos para la fecha seleccionada (ordenados en orden ascendente)
+day_events = sorted(events_by_date.get(selected_date, []), key=lambda evt: evt.reference_time_utc)
 
 if not day_events:
     st.sidebar.warning(f"No hay eventos registrados para el {selected_date}.")
