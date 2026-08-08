@@ -3,7 +3,7 @@ import streamlit as st
 from src.core.reader import MseedReader
 from src.core.event_grouper import EventGrouper
 from src.modules.visualizer import WaveformVisualizer
-from src.utils.time_utils import format_utc_display, format_duration
+from src.utils.time_utils import format_utc_display, format_utc_time_only, format_duration
 
 try:
     from plotly_resampler import register_plotly_resampler
@@ -71,10 +71,7 @@ st.sidebar.markdown("---")
 st.sidebar.subheader("📅 Selección de Evento Regional")
 
 # Mapeos globales y agrupación por fecha
-all_event_options = {
-    f"{evt.event_id} | {format_utc_display(evt.reference_time_utc)} ({evt.n_stations} est.)": evt
-    for evt in events
-}
+all_events_by_id = {evt.event_id: evt for evt in events}
 
 events_by_date = {}
 for evt in events:
@@ -106,12 +103,12 @@ if not day_events:
     day_event_options = {}
 else:
     day_event_options = {
-        f"{evt.event_id} | {format_utc_display(evt.reference_time_utc)} ({evt.n_stations} est.)": evt
+        f"{format_utc_time_only(evt.reference_time_utc)} ({evt.n_stations} est.)": evt.event_id
         for evt in day_events
     }
 
-if "applied_event_label" not in st.session_state:
-    st.session_state.applied_event_label = None
+if "applied_event_id" not in st.session_state:
+    st.session_state.applied_event_id = None
 
 if day_event_options:
     selected_option_label = st.sidebar.selectbox(
@@ -121,20 +118,20 @@ if day_event_options:
     )
     btn_apply_event = st.sidebar.button("✅ Aplicar Selección de Eventos", use_container_width=True)
     if btn_apply_event:
-        st.session_state.applied_event_label = selected_option_label
+        st.session_state.applied_event_id = day_event_options[selected_option_label]
 else:
     st.sidebar.button("✅ Aplicar Selección de Eventos", use_container_width=True, disabled=True)
 
 # Validar si el evento aplicado existe en el catálogo global
-if st.session_state.applied_event_label not in all_event_options:
-    st.session_state.applied_event_label = None
+if st.session_state.applied_event_id not in all_events_by_id:
+    st.session_state.applied_event_id = None
 
 # Si aún no se ha aplicado ningún evento (estado inicial)
-if st.session_state.applied_event_label is None:
+if st.session_state.applied_event_id is None:
     st.info("👈 Por favor selecciona una fecha y un evento en el panel de control y presiona '**✅ Aplicar Selección de Eventos**' para comenzar.")
     st.stop()
 
-selected_event = all_event_options[st.session_state.applied_event_label]
+selected_event = all_events_by_id[st.session_state.applied_event_id]
 available_stations = sorted(list(selected_event.stations.keys()))
 
 # Inicializar o actualizar el estado de la sesión cuando cambia el evento seleccionado

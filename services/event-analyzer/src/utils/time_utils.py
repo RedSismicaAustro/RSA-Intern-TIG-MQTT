@@ -13,6 +13,12 @@ def format_utc_display(utc_dt: datetime) -> str:
         return utc_dt
     return utc_dt.strftime("%Y-%m-%d %H:%M:%S UTC")
 
+def format_utc_time_only(utc_dt: datetime) -> str:
+    """Formatea datetime a solo hora HH:MM:SS UTC."""
+    if isinstance(utc_dt, str):
+        return utc_dt
+    return utc_dt.strftime("%H:%M:%S UTC")
+
 def format_duration(seconds: float) -> str:
     """Formatea segundos a minutos y segundos legibles."""
     mins = int(seconds // 60)
