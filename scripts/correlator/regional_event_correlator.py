@@ -18,8 +18,10 @@ import json
 import logging
 import os
 import signal
+import socket
 import sys
 import time
+import uuid
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional
 from dotenv import load_dotenv
@@ -61,6 +63,9 @@ class RegionalEventCorrelator:
         cap = self.config.get("cap", "smart")
         
         self.topic_sub = self.config["topics"]["events_subscription"].format(org=org, app=app, cap=cap)
+        self.topic_metadata = self.config["topics"].get(
+            "events_metadata", "{org}/{app}/{cap}/events/metadata"
+        ).format(org=org, app=app, cap=cap)
         self.topic_broadcast = self.config["topics"]["cmd_broadcast"].format(org=org, app=app, cap=cap)
         self.topic_res = self.config["topics"]["cmd_response_sub"].format(org=org, app=app, cap=cap)
 
@@ -96,7 +101,9 @@ class RegionalEventCorrelator:
         username = os.getenv("MQTT_USERNAME")
         password = os.getenv("MQTT_PASSWORD")
 
-        client_id = f"rsa_correlator_server_{os.getpid()}"
+        # Client ID único para evitar colisiones en Mosquitto
+        client_suffix = uuid.uuid4().hex[:6]
+        client_id = f"rsa_correlator_{socket.gethostname()}_{client_suffix}"
 
         try:
             self.mqtt_client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, client_id=client_id)
@@ -311,6 +318,52 @@ class RegionalEventCorrelator:
                 self.logger.error(f"[BROADCAST_FAIL] Fallo al publicar comando broadcast (rc={res.rc}).")
         except Exception as exc:
             self.logger.error(f"[BROADCAST_ERR] Excepción enviando comando MQTT: {exc}")
+
+        # Construir y publicar payload de metadatos para InfluxDB / Telegraf
+        estaciones_sorted = sorted(estaciones)
+        stations_csv = ",".join(estaciones_sorted)
+        trigger_details = {
+            "window_s": self.ventana_coincidencia_s,
+            "detections": [
+                {
+                    "station": d["station_id"],
+                    "phase": d["type"],
+                    "probability": d["prob"],
+                    "timestamp": d["dt"].strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+                }
+                for d in detecciones
+            ]
+        }
+
+        # Timestamp UTC de referencia del evento
+        evt_timestamp_str = dt_min.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
+
+        meta_payload = {
+            "event_type": "auto",
+            "source": "correlator",
+            "event_id": req_id,
+            "timestamp_utc": evt_timestamp_str,
+            "stations": stations_csv,
+            "n_stations": len(estaciones),
+            "duration_s": duration,
+            "request_id": req_id,
+            "details": json.dumps(trigger_details, ensure_ascii=False)
+        }
+
+        meta_json = json.dumps(meta_payload, ensure_ascii=False)
+        self.logger.info(
+            f"[METADATA_SEND] Publicando metadatos de evento en '{self.topic_metadata}' → "
+            f"event_id={req_id}, stations={stations_csv}, n={len(estaciones)}"
+        )
+
+        try:
+            res_meta = self.mqtt_client.publish(self.topic_metadata, meta_json, qos=1, retain=False)
+            if res_meta.rc == 0:
+                self.logger.info(f"[METADATA_OK] Metadatos publicados exitosamente (mid={res_meta.mid}).")
+            else:
+                self.logger.error(f"[METADATA_FAIL] Fallo al publicar metadatos (rc={res_meta.rc}).")
+        except Exception as exc:
+            self.logger.error(f"[METADATA_ERR] Excepción enviando metadatos MQTT: {exc}")
 
 
 def main():

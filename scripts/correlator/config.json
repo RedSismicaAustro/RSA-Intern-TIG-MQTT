@@ -12,6 +12,7 @@
     },
     "topics": {
         "events_subscription": "{org}/{app}/{cap}/+/events/detected",
+        "events_metadata": "{org}/{app}/{cap}/events/metadata",
         "cmd_broadcast": "{org}/{app}/{cap}/broadcast/cmd/extract_event",
         "cmd_response_sub": "{org}/{app}/{cap}/+/cmd/extract_event/res"
     }
