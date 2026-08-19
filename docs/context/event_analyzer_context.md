@@ -2,15 +2,16 @@
 proyecto: RSA-Intern-TIG-MQTT
 tipo: contexto_tecnico
 archivo: services/event-analyzer/app.py
-temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp, lazy-loading]
+temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp, lazy-loading, influxdb, mqtt, clasificacion]
 ---
 # Visualizador Web de Eventos Sísmicos (Event Analyzer) — Contexto para Agentes IA
 
-> Aplicación Web containerizada en Streamlit + ObsPy + Plotly para la ingesta, alineación temporal UTC, procesamiento DSP y exploración gráfica interactiva multiestación de eventos sísmicos en formato MiniSEED almacenados en Google Drive.
+> Aplicación Web modular containerizada en Streamlit + ObsPy + Plotly + InfluxDB + MQTT para la ingesta ultra rápida desde base de datos, alineación temporal UTC, procesamiento DSP, visualización interactiva multiestación y ciclo cerrado de clasificación (confirmación/descarte) de eventos sísmicos.
 
 **Ruta**: `services/event-analyzer/app.py`  
 **Rutas de Archivos Asociados**:
-- Ingestor por Expresión Regular: `services/event-analyzer/src/core/reader.py`
+- Cliente InfluxDB y MQTT: `services/event-analyzer/src/core/influx_client.py`
+- Ingestor y Búsqueda Selectiva: `services/event-analyzer/src/core/reader.py`
 - Agrupador Regional UTC: `services/event-analyzer/src/core/event_grouper.py`
 - Clase Base Pipeline: `services/event-analyzer/src/modules/base.py`
 - Renderizador de Formas de Onda: `services/event-analyzer/src/modules/visualizer.py`
@@ -20,65 +21,59 @@ temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp,
 - Dependencias: `services/event-analyzer/requirements.txt`
 - Integración Docker Compose: `services/docker-unified/docker-compose.yml`
 
-**LOC**: `app.py`: 234 | `reader.py`: 86 | `event_grouper.py`: 90 | `visualizer.py`: 234 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 16  
+**LOC**: `app.py`: 280 | `influx_client.py`: 180 | `reader.py`: 145 | `event_grouper.py`: 90 | `visualizer.py`: 234 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 18  
 **Lenguaje/Formato**: Python 3.11, Streamlit UI, TOML, Dockerfile, YAML  
-**Dependencias/Librerías**: `obspy>=1.4.0`, `streamlit>=1.30.0`, `plotly>=5.18.0`, `pandas>=2.0.0`, `numpy>=1.24.0`, `plotly-resampler>=0.9.1`  
+**Dependencias/Librerías**: `obspy>=1.4.0`, `streamlit>=1.30.0`, `plotly>=5.18.0`, `pandas>=2.0.0`, `numpy>=1.24.0`, `plotly-resampler>=0.9.1`, `influxdb-client>=1.36.0`, `paho-mqtt>=1.6.1`  
 **Proceso**: Servicio contenedorizado (`rsa-event-analyzer`) expuesto en el puerto `8501` (Streamlit) y `8050` (Resampler Dash), parte del stack `docker-unified` en la red `rsa_network` (`monitoring`).
 
 ---
 
 ## 🎯 Arquitectura y Flujo de Datos
 
-El sistema opera como una tubería (Pipeline) de lectura, agrupamiento y visualización dividida en las siguientes fases:
+El sistema opera bajo un modelo desacoplado de índice rápido en InfluxDB y resolución de trazas bajo demanda (*Lazy Loading*) en Google Drive:
 
-1. **Escaneo por Expresión Regular (`reader.py`)**:
-   - Escanea el punto de montaje de Google Drive (`/data/events` $\leftarrow$ `/home/rsa/datos_estaciones_drive`).
-   - Aplica la expresión regular `FILENAME_PATTERN = r"^([A-Za-z0-9]+)_(\d{8})_(\d{6})\.(?:mseed|MSEED)$"` sobre los nombres de archivo.
-   - Extrae el código de la estación y la fecha/hora de inicio UTC sin ejecutar lecturas de disco/red con ObsPy durante la ingesta inicial, garantizando un listado instantáneo.
-2. **Agrupamiento Regional UTC (`event_grouper.py`)**:
-   - Ordena las trazas cronológicamente por `start_utc`.
-   - Agrupa trazas de distintas estaciones cuyo tiempo de inicio coincida dentro de una ventana configurable (30 segundos).
-   - Genera identificadores únicos de evento (`EVT-YYYYMMDD-HHMMSS`) y mantiene referencias ligeras a `EventFile` (*Lazy Loading*).
-3. **Interfaz de Usuario Streamlit con Calendario (`app.py`)**:
-   - Presenta una barra lateral con selección de evento mediante calendario (`st.date_input`) que filtra dinámicamente el desplegable de eventos según el día seleccionado.
-   - Registra al inicio `register_plotly_resampler(mode="Dash", port=8050, host="0.0.0.0")` para interceptar gráficos Plotly y enlazarlos al micro-servidor Dash en puerto 8050.
-   - Implementa un estado inicial en blanco (`st.session_state.applied_event_label = None` con `st.stop()`) para prevenir la renderización automática o cargas pesadas al iniciar la aplicación o cambiar controles.
-   - Incluye el botón `✅ Aplicar Selección de Eventos` para gatillar el cálculo y graficado, además de formularios independientes (`st.form`) para selección de estaciones y filtros DSP.
-4. **Carga Bajo Demanda, DSP y Resampling Dinámico en Alta Resolución (`visualizer.py`)**:
-   - Al seleccionar y confirmar un evento, invoca `regional_event.load_streams()`, cargando con ObsPy únicamente las trazas MiniSEED de las estaciones requeridas.
-   - Aplica `st_copy.detrend("demean")` y `st_copy.detrend("linear")` para remover tendencia/media.
-   - Aplica filtro pasabanda Butterworth de 4to orden con fase cero (`tr.filter("bandpass", ...)`).
-   - **Resampling Dinámico (`plotly-resampler`)**: Enuelve la figura en `FigureResampler(sub_fig, default_n_shown_samples=3000)` inyectando trazas crudas completas mediante `hf_x` y `hf_y`. Mantiene la vista inicial diezmada a 3000 puntos (evitando `MessageSizeError` > 200MB) y recalcula dinámicamente muestras a resolución nativa de 100-200 Hz cuando el usuario aplica zoom para la picada exacta de ondas P y S.
-   - Construye una figura Plotly `make_subplots` multi-canal (Z, N, E) alineada temporalmente en UTC con paleta de colores por estación e interacción *hover*.
+1. **Índice Rápido desde InfluxDB (`influx_client.py`)**:
+   - Consulta el bucket `rsa_events` mediante consultas Flux parametrizadas.
+   - Obtiene fechas únicas con eventos (`get_recorded_dates()`) y lista de eventos por día (`get_events_by_date()`) en milisegundos, eliminando la sobrecarga de I/O de disco durante la navegación.
+   - Aplica jerarquía de prioridades de estado (`confirmed`/`discarded` > `manual` > `auto`) para consolidar actualizaciones de clasificación del mismo evento.
+2. **Interfaz de Usuario Streamlit y Estado Optimista (`app.py`)**:
+   - Barra lateral con selector de fecha (`st.date_input`) y menú desplegable de eventos con `format_func` sobre IDs inmutables (`event_ids_list`).
+   - Insignias visuales de estado: `🤖 Auto` (Correlador), `👤 Manual` (Node-RED), `✅ Confirmado` (Sismo Real), `❌ Descartado` (Falsa Alarma / Ruido).
+   - Botón **"🔄 Recargar Catálogo"** que invalida la caché `@st.cache_data` y consulta InfluxDB instantáneamente.
+   - Botones de acción **"✅ Confirmar Evento"** y **"❌ Descartar Evento"** con actualización optimista inmediata en `st.session_state` y notificación Toast.
+3. **Ciclo Cerrado de Clasificación MQTT**:
+   - Al presionar Confirmar o Descartar, `influx_client.publish_classification()` emite el payload JSON a `rsa/seismic/smart/events/metadata` con QoS 1 conservando el `timestamp_utc` original del evento.
+   - Telegraf captura la publicación y actualiza el registro en InfluxDB.
+4. **Búsqueda Selectiva y Normalización de Estaciones (`reader.py`)**:
+   - Al seleccionar un evento, `reader.scan_event()` resuelve y localiza las trazas `.mseed` puntuales en `/data/events` buscando por fecha `YYYYMMDD` en una ventana temporal de 120s.
+   - Mapea variantes de código de estación mediante `_normalize_station_variants()` (ej. `CHA2` $\leftrightarrow$ `CHA02`, `DEV0` $\leftrightarrow$ `DEV00`).
+5. **Carga Bajo Demanda, DSP y Resampling Dinámico (`visualizer.py`)**:
+   - Carga con ObsPy únicamente los archivos MiniSEED resueltos.
+   - Aplica remoción de tendencia (`detrend`), filtrado pasabanda Butterworth y envolvente `FigureResampler(port=8050)` para zoom interactivo de alta resolución sin degradar el navegador.
 
 ```mermaid
 graph TD
-    subgraph Google Drive Mount (/data/events)
-        DriveFiles[Archivos .mseed en Subcarpetas de Estaciones]
+    subgraph InfluxDB Bucket (rsa_events)
+        DB[(Índice de Metadatos de Eventos)]
     end
 
-    subgraph Core Ingestion (Fast Scanning)
-        DriveFiles -->|1. Listado de Nombres| Reader[MseedReader: reader.py]
-        Reader -->|2. Regex Parsing sin ObsPy| EventFiles[Lista de EventFile Metadata]
-        EventFiles -->|3. Proximidad UTC < 30s| Grouper[EventGrouper: event_grouper.py]
-        Grouper -->|4. Agrupamiento| RegionalEvents[Lista de RegionalEvent Metadata]
+    subgraph Core Streamlit UI (app.py)
+        DB -->|1. get_catalog_dates & get_events_by_date| Client[InfluxEventsClient: influx_client.py]
+        Client -->|2. Carga Instantánea <50ms| Calendar[Calendario & Selector de Evento]
+        Calendar -->|3. Evento Seleccionado| Actions[Botones Confirmar / Descartar]
+        Actions -->|4. Publicación QoS 1 MQTT| MQTT[Broker Mosquitto: events/metadata]
     end
 
-    subgraph Interface & State (app.py)
-        RegionalEvents -->|5. Filtrado por Fecha| Calendar[st.date_input & Dropdown por Día]
-        Calendar -->|6. Confirmación ✅| State[st.session_state & Formularios]
-        Form1[Form: Estaciones Seleccionadas] -->|Confirmación ✅| State
-        Form2[Form: Filtros DSP] -->|Confirmación ⚡| State
+    subgraph Google Drive (/data/events)
+        DriveFiles[Archivos .mseed en Directorios de Estaciones]
     end
 
-    subgraph Pipeline & Rendering (visualizer.py)
-        State -->|7. Lazy Loading por Demanda| Load[load_streams: ObsPy Read]
-        Load -->|8. Detrend & Pasabanda| DSP[Procesamiento DSP]
-        DSP -->|9. FigureResampler hf_x/hf_y| Resampler[Resampling Dinámico 3k pts]
-        Resampler -->|10. Callback Zoom AJAX puerto 8050| Plotly[Plotly Multi-trace Subplots Alta Res]
+    subgraph Lazy Loading & DSP
+        Calendar -->|5. Resolver Solo Evento Actual| Reader[MseedReader.scan_event: reader.py]
+        DriveFiles -->|6. Lectura Puntual| Reader
+        Reader -->|7. ObsPy Stream Read| Visualizer[WaveformVisualizer: visualizer.py]
+        Visualizer -->|8. Detrend + Bandpass + FigureResampler| Plotly[Gráfico Plotly Interactivo :8501 / :8050]
     end
-
-    Plotly -->|11. Gráfico Interactivo con Zoom Nativo| Operador((Operador / Sismólogo en :8501))
 ```
 
 ---
@@ -86,17 +81,20 @@ graph TD
 ## ⚙️ Configuraciones y Variables de Entorno
 
 ### Variables del Entorno Docker (`docker-compose.yml`)
-- `DATA_DIR=/data/events`: Ruta interna dentro del contenedor donde se montan las trazas sísmicas.
-- `TZ=America/Guayaquil`: Zona horaria para concordancia de logs locales.
-- `RESAMPLER_HOST=ubuntu-server`: Hostname/IP de la LAN asignado para los callbacks de zoom de `plotly-resampler`.
+- `DATA_DIR=/data/events`: Montaje en solo lectura de Google Drive.
+- `INFLUXDB_URL=http://influxdb:8086`: Conexión interna a InfluxDB.
+- `INFLUXDB_TOKEN=${INFLUXDB_TOKEN}`: Token de autenticación InfluxDB v2.
+- `INFLUXDB_ORG=${INFLUXDB_ORG}`: Organización InfluxDB (`rsa`).
+- `INFLUXDB_EVENTS_BUCKET=${INFLUXDB_EVENTS_BUCKET:-rsa_events}`: Bucket de eventos sísmicos.
+- `MQTT_BROKER=${MQTT_BROKER}`: Host del broker Mosquitto.
+- `MQTT_PORT=1883`: Puerto MQTT.
+- `MQTT_USERNAME` / `MQTT_PASSWORD`: Credenciales MQTT autenticadas.
+- `MQTT_METADATA_TOPIC=rsa/seismic/smart/events/metadata`: Tópico de metadatos.
+- `RESAMPLER_HOST=ubuntu-server`: Hostname/IP para callbacks Dash.
 
 ### Puertos Expuestos
-- `8501:8501`: Puerto nativo para acceder a la aplicación web Streamlit.
-- `8050:8050`: Puerto nativo del micro-servidor Dash para callbacks de zoom en tiempo real de `plotly-resampler`.
-
-### Volúmenes de Persistencia e Integración
-- `/home/rsa/datos_estaciones_drive:/data/events:ro`: Montaje en modo **solo lectura** del directorio de Google Drive mantenido por el servicio `rclone`.
-- `../event-analyzer:/app`: Montaje bind del código fuente local para reflejar actualizaciones de desarrollo en tiempo real.
+- `8501:8501`: Interfaz web Streamlit.
+- `8050:8050`: Servidor Dash de `plotly-resampler`.
 
 ---
 
@@ -104,56 +102,17 @@ graph TD
 
 | Clase / Módulo | Archivo | Propósito / Función |
 |----------------|---------|---------------------|
-| `MseedReader` | `src/core/reader.py` | Ingestor con parseo regex de nombres de archivo `ID_YYYYMMDD_HHMMSS.mseed`. Evita la sobrecarga FUSE durante el escaneo inicial. |
-| `EventFile` | `src/core/reader.py` | DataClass liviana que almacena metadatos de traza y el método `load_stream()` para carga por demanda. |
-| `EventGrouper` | `src/core/event_grouper.py` | Motor de coincidencia temporal UTC que agrupa trazas multiestación en objetos `RegionalEvent`. |
-| `RegionalEvent` | `src/core/event_grouper.py` | Contenedor de evento regional con cálculo de estación, duración y método `load_streams()` para ObsPy. |
-| `BaseAnalysisModule` | `src/modules/base.py` | Clase abstracta para los módulos del pipeline. Define `get_name()` y `process_event(...)`. |
-| `WaveformVisualizer` | `src/modules/visualizer.py` | Hereda de `BaseAnalysisModule`. Aplica DSP, `FigureResampler` (3000 pts iniciales con zoom en alta resolución) y genera gráficos Plotly. |
-| `time_utils.py` | `src/utils/time_utils.py` | Funciones auxiliares para formateo de tiempos UTC/locales y duraciones. |
+| `InfluxEventsClient` | `src/core/influx_client.py` | Consulta Flux de fechas/eventos, jerarquía de estados y publicación MQTT con QoS 1. |
+| `MseedReader` | `src/core/reader.py` | Resolución selectiva `scan_event()` con normalización de variantes de estación (`_normalize_station_variants`). |
+| `EventFile` | `src/core/reader.py` | DataClass liviana de metadatos de archivo MiniSEED y cargador `load_stream()`. |
+| `EventGrouper` | `src/core/event_grouper.py` | Motor de agrupación temporal multiestación (utilizado en modo fallback/offline). |
+| `RegionalEvent` | `src/core/event_grouper.py` | Estructura de evento regional con metadatos y métodos de carga ObsPy. |
+| `WaveformVisualizer` | `src/modules/visualizer.py` | Procesamiento DSP (detrend, bandpass) y renderizado de alta resolución con `FigureResampler`. |
+| `time_utils.py` | `src/utils/time_utils.py` | Formateo UTC y duraciones para la interfaz de usuario. |
 
 ---
 
-## 🐳 Integración Docker Compose (`services/docker-unified/docker-compose.yml`)
+## 📌 Limitaciones Conocidas y Buenas Prácticas
 
-El servicio está integrado como la 5ta unidad del stack unificado:
-
-```yaml
-  event-analyzer:
-    build:
-      context: ../event-analyzer
-      dockerfile: Dockerfile
-    container_name: rsa-event-analyzer
-    restart: unless-stopped
-    ports:
-      - "8501:8501"
-      - "8050:8050"
-    volumes:
-      - ../event-analyzer:/app
-      - ${DRIVE_DIR}:/data/events:ro
-    environment:
-      - DATA_DIR=/data/events
-      - TZ=America/Guayaquil
-      - RESAMPLER_HOST=${RESAMPLER_HOST:-ubuntu-server}
-    networks:
-      - monitoring
-```
-
-### Operación y Despliegue
-
-```bash
-# Arrancar o recompilar el servicio dentro del stack
-cd services/docker-unified
-docker compose up -d --build event-analyzer
-
-# Monitorear logs en tiempo real
-docker compose logs -f event-analyzer
-```
-
----
-
-## 📌 Limitaciones Conocidas y Pasos Futuros
-
-- **Formato de Nombre Requerido**: El escaneo ultra rápido asume la convención `<ESTACION>_<YYYYMMDD>_<HHMMSS>.mseed`. Si un archivo posee un nombre no estandarizado, recurre a un *fallback* basado en la fecha de modificación del sistema de archivos.
-- **Sin Autenticación HTTP**: La interfaz en el puerto 8501 no posee login nativo (adecuado para red interna/VPN). Si se expone a internet, se recomienda un proxy inverso Nginx con autenticación básica.
-- **Preparado para Fase 2 y 3**: La estructura bajo `BaseAnalysisModule` permite conectar en las siguientes fases el módulo de control MQTT (`cmd/extract_event`) y los clasificadores GPD / STA-LTA para filtrado de falsos positivos.
+1. **Persistencia Temporal**: Las clasificaciones publicadas a MQTT deben contener el `timestamp_utc` original del evento para que Telegraf lo almacene en el mismo timestamp `_time` en InfluxDB.
+2. **Lazy Loading Puro**: Nunca se debe ejecutar un escaneo recursivo completo de Google Drive durante el ciclo de vida normal de la aplicación para preservar el rendimiento.
