@@ -143,6 +143,16 @@ services:
       - DATA_DIR=/data/events
       - TZ=America/Guayaquil
       - RESAMPLER_HOST=${RESAMPLER_HOST:-ubuntu-server}
+      # Configuración InfluxDB
+      - INFLUXDB_URL=http://influxdb:8086
+      - INFLUXDB_TOKEN=${INFLUXDB_TOKEN}
+      - INFLUXDB_ORG=${INFLUXDB_ORG}
+      - INFLUXDB_EVENTS_BUCKET=${INFLUXDB_EVENTS_BUCKET:-rsa_events}
+      # Configuración MQTT
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
 
     networks:
       - monitoring
