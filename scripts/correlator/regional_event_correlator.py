@@ -291,7 +291,7 @@ class RegionalEventCorrelator:
         start_str = dt_start.strftime("%Y-%m-%dZ%H:%M:%S.%f")[:-3]
         duration = float(self.ventana_pre_evento_s + self.ventana_post_evento_s)
 
-        req_id = f"corr-{datetime.now(timezone.utc).strftime('%Y%m%d-%H%M%S')}"
+        req_id = f"corr-{dt_min.strftime('%Y%m%d-%H%M%S')}"
 
         cmd_payload = {
             "start": start_str,

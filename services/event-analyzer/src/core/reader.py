@@ -37,12 +37,12 @@ class MseedReader:
             logger.warning(f"Directorio de eventos no encontrado: {self.data_dir}")
             return []
 
-        # Buscar todos los archivos .mseed / .MSEED bajo data_dir
-        pattern_lower = os.path.join(self.data_dir, "**", "*.mseed")
-        pattern_upper = os.path.join(self.data_dir, "**", "*.MSEED")
+        # Buscar todos los archivos .mseed / .MSEED bajo data_dir/*/events/
+        pattern_lower = os.path.join(self.data_dir, "*", "events", "*.mseed")
+        pattern_upper = os.path.join(self.data_dir, "*", "events", "*.MSEED")
         
-        filepaths = glob.glob(pattern_lower, recursive=True)
-        filepaths.extend(glob.glob(pattern_upper, recursive=True))
+        filepaths = glob.glob(pattern_lower)
+        filepaths.extend(glob.glob(pattern_upper))
 
         event_files = []
         for fp in filepaths:
@@ -125,11 +125,11 @@ class MseedReader:
         found_paths = set()
         for d_str in date_candidates:
             pats = [
-                os.path.join(self.data_dir, "**", f"*{d_str}*.mseed"),
-                os.path.join(self.data_dir, "**", f"*{d_str}*.MSEED")
+                os.path.join(self.data_dir, "*", "events", f"*{d_str}*.mseed"),
+                os.path.join(self.data_dir, "*", "events", f"*{d_str}*.MSEED")
             ]
             for p in pats:
-                for fp in glob.glob(p, recursive=True):
+                for fp in glob.glob(p):
                     found_paths.add(fp)
 
         matched_files = []

@@ -219,7 +219,7 @@ def format_event_selector_label(evt_id: str) -> str:
     current_status = st.session_state.optimistic_status.get(evt_id, evt.get("event_type", "auto"))
     icon = get_status_icon(current_status)
     time_str = format_utc_time_only(evt["reference_time_utc"]) if evt.get("reference_time_utc") else "--:--"
-    return f"{icon} {time_str} ({evt['n_stations']} est.) — {evt_id}"
+    return f"{icon} {time_str} ({evt['n_stations']} det.) — {evt_id}"
 
 # Determinar índice preseleccionado
 default_idx = 0
@@ -248,10 +248,11 @@ selected_event_dict = events_by_id_map[st.session_state.applied_event_id]
 # ==============================================================================
 reader = MseedReader(data_dir=data_dir)
 ref_dt = selected_event_dict.get("reference_time_utc") or datetime.now(timezone.utc)
-stations_target = selected_event_dict.get("stations", [])
+# Estaciones que dispararon la correlación (dato informativo para metadatos)
+detecting_stations = selected_event_dict.get("stations", [])
 
 with st.spinner("Buscando trazas sísmicas MiniSEED bajo demanda..."):
-    matched_event_files = reader.scan_event(ref_time=ref_dt, stations=stations_target, window_s=120.0)
+    matched_event_files = reader.scan_event(ref_time=ref_dt, stations=None, window_s=120.0)
 
 # Construir objeto RegionalEvent
 stations_dict = {}
@@ -268,7 +269,7 @@ current_regional_event = RegionalEvent(
     event_files=matched_event_files
 )
 
-available_stations = sorted(list(stations_dict.keys())) if stations_dict else stations_target
+available_stations = sorted(list(stations_dict.keys())) if stations_dict else detecting_stations
 
 # Inicializar o actualizar estado de sesión para el evento actual
 if "current_event_id" not in st.session_state or st.session_state.current_event_id != current_regional_event.event_id:
@@ -376,7 +377,7 @@ st.markdown("---")
 col_m1, col_m2, col_m3, col_m4 = st.columns(4)
 active_stations = st.session_state.applied_stations
 col_m1.metric("📍 Evento Regional", current_regional_event.event_id, format_utc_display(current_regional_event.reference_time_utc))
-col_m2.metric("📡 Estaciones Seleccionadas", f"{len(active_stations)} / {len(available_stations)}", f"Estaciones: {', '.join(active_stations)}")
+col_m2.metric("📡 Estaciones Resueltas", f"{len(active_stations)} / {len(available_stations)}", f"Detectoras: {', '.join(detecting_stations)}")
 col_m3.metric("⏱️ Duración del Registro", format_duration(selected_event_dict.get("duration_s", 120.0)))
 
 # Generar gráfico Plotly mediante WaveformVisualizer
@@ -401,7 +402,7 @@ st.markdown("---")
 
 if fig is None:
     if not matched_event_files:
-        st.warning(f"⚠️ No se encontraron archivos `.mseed` locales para las estaciones ({', '.join(stations_target)}) en la fecha `{ref_dt.strftime('%Y-%m-%d')}`. Se muestran únicamente los metadatos registrados en InfluxDB.")
+        st.warning(f"⚠️ No se encontraron archivos `.mseed` locales en la ventana temporal de {ref_dt.strftime('%Y-%m-%d %H:%M UTC')}. Se muestran únicamente los metadatos registrados en InfluxDB.")
     else:
         st.warning("Selecciona al menos una estación y presiona '✅ Aplicar Selección de Estaciones' para generar la visualización.")
 else:
@@ -413,7 +414,7 @@ with st.expander("📄 Ver Metadatos del Evento y Archivos de Trazas", expanded=
     st.write(f"**Tipo de Evento (`event_type`)**: `{current_evt_type}`")
     st.write(f"**Origen de Detección (`source`)**: `{selected_event_dict.get('source')}`")
     st.write(f"**Tiempo UTC de Referencia**: `{format_utc_display(ref_dt)}`")
-    st.write(f"**Estaciones Participantes**: {selected_event_dict.get('stations_str', ', '.join(stations_target))}")
+    st.write(f"**Estaciones Detectoras (Correlación)**: {selected_event_dict.get('stations_str', ', '.join(detecting_stations))}")
     st.write(f"**Solicitud Broadcast (`request_id`)**: `{selected_event_dict.get('request_id', 'N/A')}`")
 
     details_obj = selected_event_dict.get("details", {})
