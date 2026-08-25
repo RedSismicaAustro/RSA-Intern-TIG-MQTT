@@ -62,12 +62,15 @@ Se eligió la **Opción B**:
   - Se eliminan por completo las trazas duplicadas causadas por lecturas de registro continuo.
   - Relación matemática y visual directa: `event_id` = Hora del evento; `archivo.mseed` = `event_id - 60s`.
   - La interfaz de usuario refleja con precisión el estado de la red (estaciones que alertaron vs estaciones con datos).
+  - Se completó y validó la migración retroactiva de 165 eventos históricos en InfluxDB sin pérdida ni duplicación de datos.
 - **Negativas / Trabajo Futuro:**
-  - Ejecución del Paso 4 de migración en InfluxDB antes de continuar con la Fase 5 (Protocolo de Respaldo y Recuperación).
+  - Proceder con la Fase 5 (Protocolo de Respaldo y Recuperación automatizada de eventos).
 
 ## Referencias
 
 - Diagnóstico técnico: [diagnostico_event_analyzer.md](file:///home/rsa/.gemini/antigravity-ide/brain/c712e0e0-0785-49f1-89a0-3efc836941a3/diagnostico_event_analyzer.md)
 - Plan de implementación: [docs/blueprints/2026-08-21_event_analyzer_correlator_fixes_implementation_plan.md](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/docs/blueprints/2026-08-21_event_analyzer_correlator_fixes_implementation_plan.md)
-- ADR previo de integración: [ADR-015: Índice Centralizado de Eventos Sísmicos en InfluxDB](file:///home/rsa/git/rsa/RSA-Metodologias/decisiones/015_indice_eventos_sismicos_influxdb_clasificacion_mqtt.md)
+- Contexto técnico fix_event_ids: [docs/context/fix_event_ids_context.md](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/docs/context/fix_event_ids_context.md)
 - Contexto técnico Event Analyzer: [docs/context/event_analyzer_context.md](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/docs/context/event_analyzer_context.md)
+- Contexto técnico Correlador: [docs/context/regional_event_correlator_context.md](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/docs/context/regional_event_correlator_context.md)
+- ADR previo de integración: [ADR-015: Índice Centralizado de Eventos Sísmicos en InfluxDB](file:///home/rsa/git/rsa/RSA-Metodologias/decisiones/015_indice_eventos_sismicos_influxdb_clasificacion_mqtt.md)

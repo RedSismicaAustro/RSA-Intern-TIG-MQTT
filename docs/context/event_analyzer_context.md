@@ -2,7 +2,8 @@
 proyecto: RSA-Intern-TIG-MQTT
 tipo: contexto_tecnico
 archivo: services/event-analyzer/app.py
-temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp, lazy-loading, influxdb, mqtt, clasificacion]
+temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp, lazy-loading, influxdb, mqtt, clasificacion, adr-016]
+generado: 2026-08-25
 ---
 # Visualizador Web de Eventos Sísmicos (Event Analyzer) — Contexto para Agentes IA
 
@@ -21,7 +22,7 @@ temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp,
 - Dependencias: `services/event-analyzer/requirements.txt`
 - Integración Docker Compose: `services/docker-unified/docker-compose.yml`
 
-**LOC**: `app.py`: 280 | `influx_client.py`: 180 | `reader.py`: 145 | `event_grouper.py`: 90 | `visualizer.py`: 234 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 18  
+**LOC**: `app.py`: 285 | `influx_client.py`: 180 | `reader.py`: 145 | `event_grouper.py`: 90 | `visualizer.py`: 234 | `base.py`: 20 | `time_utils.py`: 22 | `Dockerfile`: 18  
 **Lenguaje/Formato**: Python 3.11, Streamlit UI, TOML, Dockerfile, YAML  
 **Dependencias/Librerías**: `obspy>=1.4.0`, `streamlit>=1.30.0`, `plotly>=5.18.0`, `pandas>=2.0.0`, `numpy>=1.24.0`, `plotly-resampler>=0.9.1`, `influxdb-client>=1.36.0`, `paho-mqtt>=1.6.1`  
 **Proceso**: Servicio contenedorizado (`rsa-event-analyzer`) expuesto en el puerto `8501` (Streamlit) y `8050` (Resampler Dash), parte del stack `docker-unified` en la red `rsa_network` (`monitoring`).
@@ -30,23 +31,27 @@ temas: [streamlit, obspy, plotly, event-analyzer, miniseed, docker-compose, dsp,
 
 ## 🎯 Arquitectura y Flujo de Datos
 
-El sistema opera bajo un modelo desacoplado de índice rápido en InfluxDB y resolución de trazas bajo demanda (*Lazy Loading*) en Google Drive:
+El sistema opera bajo un modelo desacoplado de índice rápido en InfluxDB y resolución global de trazas bajo demanda (*Lazy Loading*) en Google Drive:
 
 1. **Índice Rápido desde InfluxDB (`influx_client.py`)**:
    - Consulta el bucket `rsa_events` mediante consultas Flux parametrizadas.
    - Obtiene fechas únicas con eventos (`get_recorded_dates()`) y lista de eventos por día (`get_events_by_date()`) en milisegundos, eliminando la sobrecarga de I/O de disco durante la navegación.
    - Aplica jerarquía de prioridades de estado (`confirmed`/`discarded` > `manual` > `auto`) para consolidar actualizaciones de clasificación del mismo evento.
 2. **Interfaz de Usuario Streamlit y Estado Optimista (`app.py`)**:
-   - Barra lateral con selector de fecha (`st.date_input`) y menú desplegable de eventos con `format_func` sobre IDs inmutables (`event_ids_list`).
+   - Barra lateral con selector de fecha (`st.date_input`) y menú desplegable de eventos con `format_func` sobre IDs inmutables (`event_ids_list`), mostrando indicador `(N det.)` para estaciones detectoras.
    - Insignias visuales de estado: `🤖 Auto` (Correlador), `👤 Manual` (Node-RED), `✅ Confirmado` (Sismo Real), `❌ Descartado` (Falsa Alarma / Ruido).
    - Botón **"🔄 Recargar Catálogo"** que invalida la caché `@st.cache_data` y consulta InfluxDB instantáneamente.
    - Botones de acción **"✅ Confirmar Evento"** y **"❌ Descartar Evento"** con actualización optimista inmediata en `st.session_state` y notificación Toast.
+   - Métricas de cabecera que diferencian `📡 Estaciones Resueltas (M/M)` vs `Detectoras: EST1, EST2` (ADR-016).
 3. **Ciclo Cerrado de Clasificación MQTT**:
    - Al presionar Confirmar o Descartar, `influx_client.publish_classification()` emite el payload JSON a `rsa/seismic/smart/events/metadata` con QoS 1 conservando el `timestamp_utc` original del evento.
    - Telegraf captura la publicación y actualiza el registro en InfluxDB.
-4. **Búsqueda Selectiva y Normalización de Estaciones (`reader.py`)**:
-   - Al seleccionar un evento, `reader.scan_event()` resuelve y localiza las trazas `.mseed` puntuales en `/data/events` buscando por fecha `YYYYMMDD` en una ventana temporal de 120s.
+4. **Búsqueda Global y Aislamiento de Registro Continuo (`reader.py`)**:
+   - Al seleccionar un evento, `reader.scan_event(ref_time=ref_dt, stations=None, window_s=120.0)` busca en `*/events/*.mseed` (sin recursión), resolviendo trazas de **todas las estaciones** que respondieron al broadcast y aislando los bloques de registro continuo en `/mseed/` (ADR-016).
    - Mapea variantes de código de estación mediante `_normalize_station_variants()` (ej. `CHA2` $\leftrightarrow$ `CHA02`, `DEV0` $\leftrightarrow$ `DEV00`).
+5. **Carga Bajo Demanda, DSP y Resampling Dinámico (`visualizer.py`)**:
+   - Carga con ObsPy únicamente los archivos MiniSEED resueltos.
+   - Aplica remoción de tendencia (`detrend`), filtrado pasabanda Butterworth y envolvente `FigureResampler(port=8050)` para zoom interactivo de alta resolución sin degradar el navegador.
 5. **Carga Bajo Demanda, DSP y Resampling Dinámico (`visualizer.py`)**:
    - Carga con ObsPy únicamente los archivos MiniSEED resueltos.
    - Aplica remoción de tendencia (`detrend`), filtrado pasabanda Butterworth y envolvente `FigureResampler(port=8050)` para zoom interactivo de alta resolución sin degradar el navegador.

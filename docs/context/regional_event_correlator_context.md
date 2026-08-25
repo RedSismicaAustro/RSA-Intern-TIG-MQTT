@@ -2,7 +2,8 @@
 proyecto: RSA-Intern-TIG-MQTT
 tipo: contexto_tecnico
 archivo: scripts/correlator/regional_event_correlator.py
-temas: [correlador, mqtt, docker, eventos-regionales, extract_event, broadcast, telegraf, influxdb]
+temas: [correlador, mqtt, docker, eventos-regionales, extract_event, broadcast, telegraf, influxdb, adr-016]
+generado: 2026-08-25
 ---
 # Correlador Regional de Eventos Sísmicos MQTT — Contexto para Agentes IA
 
@@ -16,7 +17,7 @@ temas: [correlador, mqtt, docker, eventos-regionales, extract_event, broadcast, 
 - Variables de Entorno (Plantilla): `scripts/correlator/.env.example`
 - Integración Docker Compose: `services/docker-unified/docker-compose.yml`
 
-**LOC**: `regional_event_correlator.py`: 370 | `config.json`: 25 | `Dockerfile`: 12 | `requirements.txt`: 2
+**LOC**: `regional_event_correlator.py`: 391 | `config.json`: 25 | `Dockerfile`: 12 | `requirements.txt`: 2
 **Lenguaje/Formato**: Python 3.11, JSON, Dockerfile, YAML
 **Dependencias/Librerías**: `paho-mqtt>=1.6.1`, `python-dotenv>=1.0.0`
 **Proceso**: Servicio contenedorizado (`rsa-correlator`) que forma parte del stack `docker-unified` en la red `rsa_network`.
@@ -30,8 +31,8 @@ El **Correlador Regional** actúa como el validador central de eventos sísmicos
 1. **Suscribe**: Escucha alertas en `rsa/seismic/smart/+/events/detected`.
 2. **Filtra y Desduplica**: Agrupa las detecciones recibidas por ventana de 10 segundos y desduplica múltiples alertas generadas por ruido dentro de la misma estación.
 3. **Correlaciona**: Al verificar la presencia de $\ge 2$ estaciones distintas dentro de la misma ventana de 10 segundos, declara un **Evento Regional Confirmado**.
-4. **Dispara Broadcast**: Publica la orden de extracción masiva en el canal `rsa/seismic/smart/broadcast/cmd/extract_event` ordenando la subida a Drive y el borrado local (`"delete_after_upload": true`).
-5. **Emite Metadatos para InfluxDB**: Publica un payload JSON estructurado en `rsa/seismic/smart/events/metadata` con QoS 1 que contiene `event_type: "auto"`, `source: "correlator"`, `event_id`, `timestamp_utc`, estaciones participantes y probabilidades individuales para su ingesta por Telegraf en InfluxDB.
+4. **Dispara Broadcast**: Determina la detección más temprana (`dt_min`) y publica la orden de extracción masiva en `rsa/seismic/smart/broadcast/cmd/extract_event` con `req_id = corr-YYYYMMDD-HHMMSS` calculado a partir de `dt_min` (ADR-016), ordenando la subida a Drive y el borrado local (`"delete_after_upload": true`).
+5. **Emite Metadatos para InfluxDB**: Publica un payload JSON estructurado en `rsa/seismic/smart/events/metadata` con QoS 1 que contiene `event_type: "auto"`, `source: "correlator"`, `event_id` unificado con `dt_min`, `timestamp_utc`, estaciones participantes y probabilidades individuales para su ingesta por Telegraf en InfluxDB.
 
 ---
 
