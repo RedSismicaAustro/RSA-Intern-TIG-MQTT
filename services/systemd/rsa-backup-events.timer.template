@@ -1,0 +1,10 @@
+[Unit]
+Description=RSA - Timer diario para backup de eventos sísmicos (@SCHEDULE_TIME@)
+
+[Timer]
+OnCalendar=@SCHEDULE_CALENDAR@
+Persistent=true
+RandomizedDelaySec=@RANDOM_DELAY@
+
+[Install]
+WantedBy=timers.target

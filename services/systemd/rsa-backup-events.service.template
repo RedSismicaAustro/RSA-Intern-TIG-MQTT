@@ -1,0 +1,24 @@
+[Unit]
+Description=RSA - Backup diario del catálogo de eventos sísmicos (InfluxDB rsa_events)
+Wants=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=@SYSTEM_USER@
+Group=@SYSTEM_GROUP@
+WorkingDirectory=@WORKING_DIR@
+ExecStart=@BASH_BIN@ @BACKUP_SCRIPT@
+Environment=ENV_FILE=@ENV_FILE@
+
+# Timeout generoso para snapshot, exportación CSV y subida a Google Drive
+TimeoutStartSec=300
+
+# Registro en journald
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=rsa-backup-events
+
+[Install]
+WantedBy=multi-user.target
