@@ -157,6 +157,24 @@ services:
     networks:
       - monitoring
 
+  # ============================================================================
+  # DB Sync - Utilidades de Respaldo y Notificación MQTT (bajo demanda)
+  # ============================================================================
+  db-sync:
+    build:
+      context: ../../scripts/db_sync
+      dockerfile: Dockerfile
+    container_name: rsa-db-sync
+    # No tiene 'restart': este contenedor se ejecuta bajo demanda con 'docker compose run'
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - TELEGRAF_CLIENT_ID=${TELEGRAF_CLIENT_ID:-events-server}
+    networks:
+      - monitoring
+
 # ==============================================================================
 # Redes
 # ==============================================================================

@@ -47,10 +47,11 @@ graph LR
 
 | Archivo | Subfase | Descripción |
 |---|---|---|
-| `scripts/db_sync/backup_events.sh` | 5A.2 | Script principal de respaldo |
-| `scripts/db_sync/restore_events.sh` | 5A.2 | Script de restauración |
-| `scripts/db_sync/mqtt_notify.py` | 5A.2 | Helper Python para notificación MQTT |
-| `scripts/db_sync/requirements.txt` | 5A.1 | Dependencias del entorno virtual (`paho-mqtt`, `python-dotenv`) |
+| `scripts/db_sync/Dockerfile` | 5A.1 | Imagen Docker para notificación MQTT (Python 3.11-slim + paho-mqtt) |
+| `scripts/db_sync/requirements.txt` | 5A.1 | Dependencias del contenedor (`paho-mqtt`, `python-dotenv`) |
+| `scripts/db_sync/backup_events.sh` | 5A.2 | Script principal de respaldo (ejecuta en el host) |
+| `scripts/db_sync/restore_events.sh` | 5A.2 | Script de restauración (ejecuta en el host) |
+| `scripts/db_sync/mqtt_notify.py` | 5A.2 | Helper Python para notificación MQTT (ejecuta dentro del contenedor `rsa-db-sync`) |
 | `services/systemd/rsa-backup-events.service` | 5A.3 | Unidad systemd del backup |
 | `services/systemd/rsa-backup-events.timer` | 5A.3 | Timer systemd (02:00 UTC diario) |
 
@@ -58,6 +59,7 @@ graph LR
 
 | Archivo | Subfase | Cambio |
 |---|---|---|
+| `services/docker-unified/docker-compose.yml` | 5A.1 | Agregar servicio `db-sync` (utilidad bajo demanda, sin `restart`) |
 | `services/docker-unified/.env.example` | 5B | Agregar `RSA_SERVER_ROLE`, `RSA_CORRELATOR_CLIENT_ID` |
 | `services/docker-unified/docker-compose.yml` | 5B | Agregar `profiles: ["primary"]` al servicio `correlator` |
 | `scripts/correlator/regional_event_correlator.py` | 5B | `client_id` fijo + `clean_session=False` |
@@ -66,7 +68,7 @@ graph LR
 
 ## Subfase 5A.1 — Prerrequisitos
 
-**Objetivo**: Verificar y preparar las dependencias necesarias antes de crear los scripts.
+**Objetivo**: Verificar dependencias del host y crear el contenedor Docker portátil para notificación MQTT.
 
 ### Acciones
 
@@ -91,32 +93,77 @@ rclone lsd gdrive:
 rclone mkdir gdrive:RSA-Backups/influxdb
 ```
 
-#### 3. Crear entorno virtual Python para scripts de `db_sync`
+#### 3. Crear el contenedor Docker `rsa-db-sync`
 
-Crear archivo [`scripts/db_sync/requirements.txt`](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/scripts/db_sync/requirements.txt):
+En lugar de un entorno virtual Python (no portable entre servidores), se utiliza un contenedor Docker ligero siguiendo el mismo patrón del [correlador](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/scripts/correlator/Dockerfile). Esto garantiza que cualquier servidor nuevo pueda ejecutar los scripts de backup con un solo `docker compose build`.
+
+**Archivo**: `scripts/db_sync/requirements.txt`
 
 ```
 paho-mqtt>=1.6.1
 python-dotenv>=1.0.0
-influxdb-client>=1.36.0
 ```
 
-El usuario debe ejecutar en **rsa-server**:
+**Archivo**: `scripts/db_sync/Dockerfile`
 
-```bash
-cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT/scripts/db_sync
+```dockerfile
+FROM python:3.11-slim
 
-# Crear entorno virtual
-python3 -m venv .venv
+WORKDIR /app
 
-# Activar e instalar dependencias
-source .venv/bin/activate
-pip install -r requirements.txt
-deactivate
+# Instalar dependencias
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copiar scripts Python
+COPY mqtt_notify.py .
+
+# Ejecución en modo unbuffered para salida inmediata de logs
+ENTRYPOINT ["python", "-u"]
+CMD ["mqtt_notify.py", "--help"]
 ```
 
 > [!NOTE]
-> El entorno virtual `.venv` se crea dentro de `scripts/db_sync/` para que los scripts de backup/restore y el helper `mqtt_notify.py` compartan las mismas dependencias. El archivo `.venv/` debe añadirse a `.gitignore`.
+> El `ENTRYPOINT` es `python -u` y el `CMD` por defecto muestra la ayuda. Los scripts bash del host invocan el contenedor mediante `docker compose run --rm db-sync mqtt_notify.py --status success ...`, donde los argumentos sustituyen al `CMD`.
+
+**Agregar el servicio `db-sync` a Docker Compose**:
+
+**Archivo**: [`services/docker-unified/docker-compose.yml`](file:///home/rsa/git/montajes/server-ubuntu/rsa/RSA-Intern-TIG-MQTT/services/docker-unified/docker-compose.yml)
+
+Agregar antes de la sección de redes:
+
+```yaml
+  # ============================================================================
+  # DB Sync - Utilidades de Respaldo y Notificación MQTT (bajo demanda)
+  # ============================================================================
+  db-sync:
+    build:
+      context: ../../scripts/db_sync
+      dockerfile: Dockerfile
+    container_name: rsa-db-sync
+    # No tiene 'restart': este contenedor se ejecuta bajo demanda con 'docker compose run'
+    environment:
+      - MQTT_BROKER=${MQTT_BROKER}
+      - MQTT_PORT=${MQTT_PORT:-1883}
+      - MQTT_USERNAME=${MQTT_USERNAME}
+      - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - TELEGRAF_CLIENT_ID=${TELEGRAF_CLIENT_ID:-events-server}
+    networks:
+      - monitoring
+```
+
+> [!IMPORTANT]
+> **Arquitectura de ejecución**:
+> - `backup_events.sh` y `restore_events.sh` se ejecutan **en el host** porque necesitan `docker exec` (para la CLI de InfluxDB), `docker cp` (para copiar snapshots) y `rclone` (para subir a Drive).
+> - `mqtt_notify.py` se ejecuta **dentro del contenedor `rsa-db-sync`** vía `docker compose run --rm db-sync mqtt_notify.py ...`. Esto elimina la necesidad de instalar Python o dependencias en el host.
+> - El contenedor `rsa-db-sync` no corre permanentemente (`restart` no está definido). Solo se instancia bajo demanda y se destruye inmediatamente (`--rm`).
+
+El usuario debe construir la imagen tras crear los archivos:
+
+```bash
+cd /home/rsa/git/rsa/RSA-Intern-TIG-MQTT/services/docker-unified
+docker compose build db-sync
+```
 
 #### 4. Verificar permisos Docker del usuario
 
@@ -142,9 +189,10 @@ docker exec rsa-influxdb influx bucket list --org rsa --token "$(grep INFLUXDB_T
 |---|---|---|
 | C1 | `rclone` operativo | `rclone lsd gdrive:` lista directorios sin error |
 | C2 | Carpeta en Drive | `rclone lsd gdrive:RSA-Backups/` muestra `influxdb/` |
-| C3 | Entorno virtual | `scripts/db_sync/.venv/bin/python -c "import paho.mqtt; print('OK')"` imprime `OK` |
-| C4 | Docker sin sudo | `docker ps` lista contenedores sin error |
-| C5 | InfluxDB CLI | `docker exec rsa-influxdb influx ping` retorna `OK` |
+| C3 | Imagen Docker construida | `docker compose build db-sync` completa sin errores |
+| C4 | Contenedor funcional | `docker compose run --rm db-sync mqtt_notify.py --help` muestra la ayuda del script |
+| C5 | Docker sin sudo | `docker ps` lista contenedores sin error |
+| C6 | InfluxDB CLI | `docker exec rsa-influxdb influx ping` retorna `OK` |
 
 ---
 
@@ -155,7 +203,7 @@ docker exec rsa-influxdb influx bucket list --org rsa --token "$(grep INFLUXDB_T
 ### Acción 1 — Script `mqtt_notify.py`
 
 **Archivo**: `scripts/db_sync/mqtt_notify.py`  
-**Propósito**: Helper Python invocado por `backup_events.sh` para publicar el resultado vía MQTT usando `paho-mqtt` del entorno virtual.
+**Propósito**: Helper Python que se ejecuta dentro del contenedor `rsa-db-sync` para publicar el resultado vía MQTT usando `paho-mqtt`. Invocado desde `backup_events.sh` mediante `docker compose run --rm db-sync mqtt_notify.py ...`.
 
 **Interfaz CLI**:
 ```
@@ -225,7 +273,7 @@ set -euo pipefail
 # === 1. Configuración ===
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ENV_FILE="${ENV_FILE:-$SCRIPT_DIR/../../services/docker-unified/.env}"
-VENV_PYTHON="$SCRIPT_DIR/.venv/bin/python"
+COMPOSE_DIR="$SCRIPT_DIR/../../services/docker-unified"
 DATE=$(date -u +%Y-%m-%d)
 BACKUP_NAME="rsa_events_${DATE}"
 TMP_DIR="/tmp/rsa_backup_$$"
@@ -241,9 +289,10 @@ fi
 # === 3. Verificar contenedor ===
 if ! docker inspect "$CONTAINER" --format='{{.State.Running}}' 2>/dev/null | grep -q true; then
     echo "[ERROR] Contenedor $CONTAINER no está corriendo."
-    # Notificar fallo
-    "$VENV_PYTHON" "$SCRIPT_DIR/mqtt_notify.py" --status failure \
-        --error-message "Contenedor $CONTAINER no está corriendo" ...
+    # Notificar fallo vía contenedor Docker
+    docker compose -f "$COMPOSE_DIR/docker-compose.yml" run --rm db-sync \
+        mqtt_notify.py --status failure \
+        --error-message "Contenedor $CONTAINER no está corriendo"
     exit 1
 fi
 
@@ -302,8 +351,9 @@ done
 END_TIME=$(date +%s)
 DURATION=$((END_TIME - START_TIME))
 
-# === 12. Notificar resultado vía MQTT ===
-"$VENV_PYTHON" "$SCRIPT_DIR/mqtt_notify.py" \
+# === 12. Notificar resultado vía MQTT (contenedor Docker) ===
+docker compose -f "$COMPOSE_DIR/docker-compose.yml" run --rm db-sync \
+    mqtt_notify.py \
     --status success \
     --events-count "$EVENTS_COUNT" \
     --snapshot-size "$SNAPSHOT_SIZE" \
@@ -373,12 +423,12 @@ Ejecutar manualmente en **rsa-server**:
 
 | # | Verificación | Comando / Criterio |
 |---|---|---|
-| C6 | Backup manual exitoso | `bash scripts/db_sync/backup_events.sh` completa sin errores y muestra conteo de eventos |
-| C7 | Archivos en Drive | `rclone ls gdrive:RSA-Backups/influxdb/` muestra `.tar.gz` y `.csv` del día |
-| C8 | CSV legible | Abrir `rsa_events_YYYY-MM-DD.csv` y verificar columnas: `_time`, `event_id`, `event_type`, `source`, `stations`, `n_stations`, `duration_s` |
-| C9 | Notificación MQTT | Ejecutar `mosquitto_sub -h $BROKER -u $USER -P $PASS -t "rsa/seismic/smart/system/backup" -C 1` en paralelo con el backup. Verificar que recibe JSON con `"status":"success"` y `"server":"events-server"` |
-| C10 | Restauración destructiva | 1. Anotar conteo actual de eventos. 2. Ejecutar `bash scripts/db_sync/restore_events.sh --latest`. 3. Verificar que el conteo se restaura correctamente |
-| C11 | Rotación (verificación manual) | Crear archivos ficticios con fecha >7 días en Drive, ejecutar backup, verificar que se purgan |
+| C7 | Backup manual exitoso | `bash scripts/db_sync/backup_events.sh` completa sin errores y muestra conteo de eventos |
+| C8 | Archivos en Drive | `rclone ls gdrive:RSA-Backups/influxdb/` muestra `.tar.gz` y `.csv` del día |
+| C9 | CSV legible | Abrir `rsa_events_YYYY-MM-DD.csv` y verificar columnas: `_time`, `event_id`, `event_type`, `source`, `stations`, `n_stations`, `duration_s` |
+| C10 | Notificación MQTT | Ejecutar `mosquitto_sub -h $BROKER -u $USER -P $PASS -t "rsa/seismic/smart/system/backup" -C 1` en paralelo con el backup. Verificar que recibe JSON con `"status":"success"` y `"server":"events-server"` |
+| C11 | Restauración destructiva | 1. Anotar conteo actual de eventos. 2. Ejecutar `bash scripts/db_sync/restore_events.sh --latest`. 3. Verificar que el conteo se restaura correctamente |
+| C12 | Rotación (verificación manual) | Crear archivos ficticios con fecha >7 días en Drive, ejecutar backup, verificar que se purgan |
 
 ---
 
@@ -488,10 +538,10 @@ sudo systemctl daemon-reload
 
 | # | Verificación | Criterio |
 |---|---|---|
-| C12 | Timer registrado | `systemctl status rsa-backup-events.timer` muestra `active (waiting)` y la próxima fecha de ejecución |
-| C13 | Ejecución manual | `sudo systemctl start rsa-backup-events.service` completa exitosamente (verificar con `journalctl -u rsa-backup-events.service -n 20`) |
-| C14 | Logs en journalctl | La salida del script aparece correctamente en `journalctl` con el identificador `rsa-backup-events` |
-| C15 | Ejecución automática | Esperar a la próxima ejecución programada (o modificar temporalmente `OnCalendar` a los próximos 5 minutos) y verificar que el backup aparece en Drive |
+| C13 | Timer registrado | `systemctl status rsa-backup-events.timer` muestra `active (waiting)` y la próxima fecha de ejecución |
+| C14 | Ejecución manual | `sudo systemctl start rsa-backup-events.service` completa exitosamente (verificar con `journalctl -u rsa-backup-events.service -n 20`) |
+| C15 | Logs en journalctl | La salida del script aparece correctamente en `journalctl` con el identificador `rsa-backup-events` |
+| C16 | Ejecución automática | Esperar a la próxima ejecución programada (o modificar temporalmente `OnCalendar` a los próximos 5 minutos) y verificar que el backup aparece en Drive |
 
 ---
 
@@ -681,13 +731,13 @@ docker compose --profile primary ps --format '{{.Name}} {{.State}}' | grep corre
 
 | # | Verificación | Criterio |
 |---|---|---|
-| C16 | Variable `RSA_SERVER_ROLE` en `.env` | Ambos servidores tienen la variable configurada correctamente (`primary` / `mirror`) |
-| C17 | Correlador excluido en home-server | `docker compose ps` en home-server **no** muestra `rsa-correlator` |
-| C18 | Correlador activo en rsa-server | `docker compose --profile primary ps` muestra `rsa-correlator` corriendo |
-| C19 | Sesión persistente del correlador | Detener rsa-server (`docker compose --profile primary down`), publicar una detección de prueba al broker, reiniciar rsa-server, verificar en logs que el correlador procesa la detección retenida |
-| C20 | home-server recibe eventos vía MQTT | Provocar o simular un evento en rsa-server, verificar que el evento aparece en InfluxDB del home-server automáticamente (vía Telegraf sesión persistente) |
-| C21 | Clasificación cruzada | Clasificar un evento como `confirmed` desde Event Analyzer del home-server, verificar que el estado se actualiza en InfluxDB de rsa-server |
-| C22 | Restauración en home-server | Ejecutar `restore_events.sh --latest` en home-server, verificar que los eventos se restauran correctamente |
+| C17 | Variable `RSA_SERVER_ROLE` en `.env` | Ambos servidores tienen la variable configurada correctamente (`primary` / `mirror`) |
+| C18 | Correlador excluido en home-server | `docker compose ps` en home-server **no** muestra `rsa-correlator` |
+| C19 | Correlador activo en rsa-server | `docker compose --profile primary ps` muestra `rsa-correlator` corriendo |
+| C20 | Sesión persistente del correlador | Detener rsa-server (`docker compose --profile primary down`), publicar una detección de prueba al broker, reiniciar rsa-server, verificar en logs que el correlador procesa la detección retenida |
+| C21 | home-server recibe eventos vía MQTT | Provocar o simular un evento en rsa-server, verificar que el evento aparece en InfluxDB del home-server automáticamente (vía Telegraf sesión persistente) |
+| C22 | Clasificación cruzada | Clasificar un evento como `confirmed` desde Event Analyzer del home-server, verificar que el estado se actualiza en InfluxDB de rsa-server |
+| C23 | Restauración en home-server | Ejecutar `restore_events.sh --latest` en home-server, verificar que los eventos se restauran correctamente |
 
 ---
 
@@ -695,7 +745,7 @@ docker compose --profile primary ps --format '{{.Name}} {{.State}}' | grep corre
 
 | Subfase | Archivos | Dependencia | Servidor |
 |---|---|---|---|
-| **5A.1** — Prerrequisitos | `scripts/db_sync/requirements.txt`, `.venv/` | Ninguna | rsa-server |
+| **5A.1** — Prerrequisitos | `scripts/db_sync/Dockerfile`, `requirements.txt`, servicio `db-sync` en `docker-compose.yml` | Ninguna | rsa-server |
 | **5A.2** — Scripts Core | `backup_events.sh`, `restore_events.sh`, `mqtt_notify.py` | 5A.1 | rsa-server |
 | **5A.3** — Automatización | `rsa-backup-events.service`, `rsa-backup-events.timer` | 5A.2 | rsa-server |
 | **5B** — Multi-servidor | `.env.example`, `docker-compose.yml`, `regional_event_correlator.py` | 5A.3 | Ambos |
