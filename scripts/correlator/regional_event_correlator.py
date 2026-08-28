@@ -101,14 +101,19 @@ class RegionalEventCorrelator:
         username = os.getenv("MQTT_USERNAME")
         password = os.getenv("MQTT_PASSWORD")
 
-        # Client ID único para evitar colisiones en Mosquitto
-        client_suffix = uuid.uuid4().hex[:6]
-        client_id = f"rsa_correlator_{socket.gethostname()}_{client_suffix}"
+        # Client ID fijo para sesión persistente en Mosquitto.
+        # Permite que el broker retenga mensajes con QoS 1 ante cortes de energía o reinicios.
+        client_id = os.getenv("RSA_CORRELATOR_CLIENT_ID", f"rsa_correlator_{socket.gethostname()}")
+        self.logger.info(f"[CORRELATOR_CLIENT_ID] Usando client_id persistente: {client_id}")
 
         try:
-            self.mqtt_client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION2, client_id=client_id)
+            self.mqtt_client = mqtt_client.Client(
+                mqtt_client.CallbackAPIVersion.VERSION2,
+                client_id=client_id,
+                clean_session=False
+            )
         except AttributeError:
-            self.mqtt_client = mqtt_client.Client(client_id=client_id)
+            self.mqtt_client = mqtt_client.Client(client_id=client_id, clean_session=False)
 
         self.mqtt_client.user_data_set({"correlator": self})
         self.mqtt_client.on_connect = self._on_connect
