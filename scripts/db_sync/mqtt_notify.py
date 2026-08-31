@@ -73,8 +73,8 @@ def parse_arguments() -> argparse.Namespace:
     parser.add_argument(
         "--drive-path",
         type=str,
-        default="RSA-Backups/influxdb/",
-        help="Ruta destino en Google Drive (default: RSA-Backups/influxdb/)."
+        default="DIA/Datos Estaciones/RSA-Backups/influxdb/",
+        help="Ruta destino en Google Drive (default: DIA/Datos Estaciones/RSA-Backups/influxdb/)."
     )
     parser.add_argument(
         "--purged-count",

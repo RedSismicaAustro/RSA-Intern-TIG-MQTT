@@ -73,6 +73,7 @@ notify_failure() {
             mqtt_notify.py \
             --status failure \
             --error-message "$error_msg" \
+            --drive-path "${RCLONE_DEST:-gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb}" \
             --duration "$duration" 2>/dev/null || true
     fi
 }
@@ -100,7 +101,7 @@ fi
 # Variables requeridas con defaults
 INFLUXDB_ORG="${INFLUXDB_ORG:-rsa}"
 INFLUXDB_EVENTS_BUCKET="${INFLUXDB_EVENTS_BUCKET:-rsa_events}"
-RCLONE_DEST="${RCLONE_REMOTE:-gdrive:RSA-Backups/influxdb}"
+RCLONE_DEST="${RCLONE_REMOTE:-gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb}"
 TELEGRAF_CLIENT_ID="${TELEGRAF_CLIENT_ID:-events-server}"
 
 # 2. Verificar estado del contenedor InfluxDB
@@ -217,6 +218,7 @@ docker compose -f "$COMPOSE_DIR/docker-compose.yml" run --rm db-sync \
     --snapshot-size "$SNAPSHOT_SIZE" \
     --csv-size "$CSV_SIZE" \
     --backup-file "${BACKUP_NAME}.tar.gz" \
+    --drive-path "$RCLONE_DEST" \
     --duration "$DURATION" \
     --purged-count "$PURGED_COUNT" || echo "[WARN] No se pudo enviar notificación MQTT"
 

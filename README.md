@@ -33,7 +33,7 @@ El sistema combina el stack **TIG (Telegraf, InfluxDB v2, Grafana)**, un servici
 ┌──────────────┐                          ▼
 │   Grafana    │                 Google Drive (gdrive:)
 │ (Dashboards) │                 ├── /data/events/*.mseed
-└──────────────┘                 └── RSA-Backups/influxdb/ (Backups diarios)
+└──────────────┘                 └── DIA/Datos Estaciones/RSA-Backups/influxdb/ (Backups diarios)
 ```
 
 ---
@@ -196,7 +196,7 @@ RSA_CORRELATOR_CLIENT_ID=rsa-correlator-primary
 # RSA_SERVER_ROLE=mirror
 # (No definir o comentar RSA_CORRELATOR_CLIENT_ID)
 
-RCLONE_REMOTE=gdrive:RSA-Backups/influxdb
+RCLONE_REMOTE="gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb"
 ```
 
 ---
@@ -265,7 +265,7 @@ bash backup_events.sh
 ```
 - Genera un snapshot binario nativo (`rsa_events_YYYY-MM-DD.tar.gz`).
 - Exporta un archivo tabular plano (`rsa_events_YYYY-MM-DD.csv`) con todos los eventos catalogados.
-- Sube ambos archivos a `gdrive:RSA-Backups/influxdb/`.
+- Sube ambos archivos a `gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb/`.
 - Purga respaldos locales y remotos con más de 7 días de antigüedad.
 - Emite telemetría JSON con QoS 1 al tópico `rsa/seismic/smart/system/backup`.
 

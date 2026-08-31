@@ -57,7 +57,7 @@ graph TD
 | `INFLUXDB_ORG` | Organización en InfluxDB | `rsa` |
 | `INFLUXDB_EVENTS_BUCKET` | Bucket de catálogo de eventos | `rsa_events` |
 | `TELEGRAF_CLIENT_ID` | Identificador dinámico del servidor emisor | `events-server` |
-| `RCLONE_REMOTE` | Destino remoto en Google Drive | `gdrive:RSA-Backups/influxdb` |
+| `RCLONE_REMOTE` | Destino remoto en Google Drive | `gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb` |
 
 ### Opciones CLI
 

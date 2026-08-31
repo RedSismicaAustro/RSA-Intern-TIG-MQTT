@@ -44,7 +44,7 @@ graph LR
   "csv_size_bytes": 170139,
   "events_count": 424,
   "backup_file": "rsa_events_2026-08-28.tar.gz",
-  "drive_path": "RSA-Backups/influxdb/",
+  "drive_path": "gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb",
   "purged_count": 0,
   "duration_s": 11.0,
   "error_message": null

@@ -69,7 +69,7 @@ graph TD
 - `TELEGRAF_CLIENT_ID=events-oficina`: ID del servidor para Telegraf y backups.
 - `RSA_SERVER_ROLE=primary`: Rol del servidor (`primary` vs `mirror`).
 - `RSA_CORRELATOR_CLIENT_ID=rsa-correlator-primary`: Client ID fijo para sesión persistente.
-- `RCLONE_REMOTE=gdrive:RSA-Backups/influxdb`: Destino de respaldos en Google Drive.
+- `RCLONE_REMOTE="gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb"`: Destino de respaldos en Google Drive.
 
 ---
 

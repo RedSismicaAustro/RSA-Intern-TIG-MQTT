@@ -79,7 +79,7 @@ fi
 
 INFLUXDB_ORG="${INFLUXDB_ORG:-rsa}"
 INFLUXDB_EVENTS_BUCKET="${INFLUXDB_EVENTS_BUCKET:-rsa_events}"
-RCLONE_DEST="${RCLONE_REMOTE:-gdrive:RSA-Backups/influxdb}"
+RCLONE_DEST="${RCLONE_REMOTE:-gdrive:DIA/Datos Estaciones/RSA-Backups/influxdb}"
 
 # Verificar contenedor
 if ! docker inspect "$CONTAINER" --format='{{.State.Running}}' 2>/dev/null | grep -q true; then
