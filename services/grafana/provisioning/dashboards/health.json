@@ -891,28 +891,59 @@
             {
                 "current": {
                     "selected": true,
-                    "text": "CHA01",
-                    "value": "CHA01"
+                    "text": "DEV0",
+                    "value": "DEV0"
                 },
                 "datasource": {
                     "type": "influxdb",
                     "uid": "P951FEA4DE68E13C5"
                 },
-                "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"telemetry\", tag: \"station_id\")",
+                "definition": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"telemetry\", tag: \"station_id\", start: -7d, predicate: (r) => r._measurement == \"rsa\")",
                 "hide": 0,
                 "includeAll": false,
                 "label": "Estación",
                 "multi": false,
                 "name": "station",
-                "options": [],
+                "options": [
+                    {
+                        "selected": false,
+                        "text": "CHA1",
+                        "value": "CHA1"
+                    },
+                    {
+                        "selected": false,
+                        "text": "CHA2",
+                        "value": "CHA2"
+                    },
+                    {
+                        "selected": true,
+                        "text": "DEV0",
+                        "value": "DEV0"
+                    },
+                    {
+                        "selected": false,
+                        "text": "FERR",
+                        "value": "FERR"
+                    },
+                    {
+                        "selected": false,
+                        "text": "TENG",
+                        "value": "TENG"
+                    },
+                    {
+                        "selected": false,
+                        "text": "TEST",
+                        "value": "TEST"
+                    }
+                ],
                 "query": {
-                    "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"telemetry\", tag: \"station_id\")",
+                    "query": "import \"influxdata/influxdb/schema\"\nschema.tagValues(bucket: \"telemetry\", tag: \"station_id\", start: -7d, predicate: (r) => r._measurement == \"rsa\")",
                     "refId": "StandardVariableQuery"
                 },
                 "refresh": 1,
-                "regex": "",
+                "regex": "/^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/",
                 "skipUrlSync": false,
-                "sort": 0,
+                "sort": 1,
                 "type": "query"
             }
         ]
@@ -925,6 +956,6 @@
     "timezone": "browser",
     "title": "Health",
     "uid": "ffcrjb8bumy2ob2",
-    "version": 1,
+    "version": 3,
     "weekStart": ""
 }

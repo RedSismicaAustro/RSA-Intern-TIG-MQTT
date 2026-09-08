@@ -125,7 +125,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\")\r\n  // Eliminamos el filtro de estación específica para verlas todas\r\n  |> filter(fn: (r) => r.data_type == \"state\")   \r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> last()\r\n  // CRÍTICO: 'group()' vacío fusiona las tablas individuales de cada estación en una sola lista\r\n  |> group() \r\n  // Seleccionamos solo las columnas que queremos ver\r\n  |> keep(columns: [\"station_id\", \"_value\"]) \r\n  // Opcional: Renombrar para que se vea bonito en la tabla\r\n  |> rename(columns: {station_id: \"Estación\", _value: \"Status\"})",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\")\r\n  |> filter(fn: (r) => r.data_type == \"state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> group()\r\n  |> keep(columns: [\"station_id\", \"_value\"])\r\n  |> rename(columns: {station_id: \"Estación\", _value: \"Status\"})",
                     "refId": "A"
                 }
             ],
