@@ -50,10 +50,6 @@
                             {
                                 "color": "green",
                                 "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 80
                             }
                         ]
                     }
@@ -62,9 +58,34 @@
                     {
                         "matcher": {
                             "id": "byName",
-                            "options": "Status"
+                            "options": "Estación"
                         },
                         "properties": [
+                            {
+                                "id": "links",
+                                "value": [
+                                    {
+                                        "targetBlank": false,
+                                        "title": "Ver detalle en Health",
+                                        "url": "/d/ffcrjb8bumy2ob2/health?from=now-2d&to=now&refresh=5s&var-station=${__data.fields[\"Estación\"]}"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Conectividad"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "applyToRow": false,
+                                    "type": "color-text"
+                                }
+                            },
                             {
                                 "id": "mappings",
                                 "value": [
@@ -72,11 +93,67 @@
                                         "options": {
                                             "offline": {
                                                 "color": "dark-red",
-                                                "index": 1
+                                                "index": 1,
+                                                "text": "offline"
                                             },
                                             "online": {
                                                 "color": "green",
+                                                "index": 0,
+                                                "text": "online"
+                                            }
+                                        },
+                                        "type": "value"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "Diagnóstico Principal"
+                        },
+                        "properties": [
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "applyToRow": true,
+                                    "mode": "gradient",
+                                    "type": "color-background"
+                                }
+                            },
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "options": {
+                                            "OK": {
+                                                "color": "green",
                                                 "index": 0
+                                            },
+                                            "Drive": {
+                                                "color": "semi-dark-yellow",
+                                                "index": 1
+                                            },
+                                            "Hardware": {
+                                                "color": "semi-dark-yellow",
+                                                "index": 2
+                                            },
+                                            "Disco": {
+                                                "color": "dark-orange",
+                                                "index": 3
+                                            },
+                                            "Sensor": {
+                                                "color": "dark-red",
+                                                "index": 4
+                                            },
+                                            "Adquisicion": {
+                                                "color": "dark-red",
+                                                "index": 5
+                                            },
+                                            "Offline": {
+                                                "color": "dark-red",
+                                                "index": 6
                                             }
                                         },
                                         "type": "value"
@@ -88,7 +165,7 @@
                                 "value": [
                                     {
                                         "targetBlank": false,
-                                        "title": "Ver detalle",
+                                        "title": "Ver detalle en Health",
                                         "url": "/d/ffcrjb8bumy2ob2/health?from=now-2d&to=now&refresh=5s&var-station=${__data.fields[\"Estación\"]}"
                                     }
                                 ]
@@ -125,7 +202,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\")\r\n  |> filter(fn: (r) => r.data_type == \"state\")\r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> group()\r\n  |> keep(columns: [\"station_id\", \"_value\"])\r\n  |> rename(columns: {station_id: \"Estación\", _value: \"Status\"})",
+                    "query": "conn_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"state\" and r._field == \"status\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value == \"offline\" then 6 else 0,\r\n      diag: if r._value == \"offline\" then \"Offline\" else \"OK\"\r\n  }))\r\n\r\nacq_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r._field == \"age_seconds\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"error\" or r._value > 300.0 then 5 else 0,\r\n      diag: if r.status == \"error\" or r._value > 300.0 then \"Adquisicion\" else \"OK\"\r\n  }))\r\n\r\nsensor_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r._field == \"az\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"error\" then 4 else 0,\r\n      diag: if r.status == \"error\" then \"Sensor\" else \"OK\"\r\n  }))\r\n\r\ndisk_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"disk_percent\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 95.0 then 3 else if r._value > 85.0 then 2 else 0,\r\n      diag: if r._value > 85.0 then \"Disco\" else \"OK\"\r\n  }))\r\n\r\ndrive_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r._field == \"pending_mseed\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"warning\" or r._value > 3 then 2 else 0,\r\n      diag: if r.status == \"warning\" or r._value > 3 then \"Drive\" else \"OK\"\r\n  }))\r\n\r\ntemp_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"cpu_temp_c\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 70.0 then 1 else 0,\r\n      diag: if r._value > 70.0 then \"Hardware\" else \"OK\"\r\n  }))\r\n\r\nthrottled_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"throttled\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value != \"0x0\" and r._value != \"\" then 1 else 0,\r\n      diag: if r._value != \"0x0\" and r._value != \"\" then \"Hardware\" else \"OK\"\r\n  }))\r\n\r\nunion(tables: [conn_vote, acq_vote, sensor_vote, drive_vote, disk_vote, temp_vote, throttled_vote])\r\n  |> group(columns: [\"station_id\"])\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 1)\r\n  |> map(fn: (r) => ({\r\n      \"Estación\": r.station_id,\r\n      \"Conectividad\": if r.diag == \"Offline\" then \"offline\" else \"online\",\r\n      \"Diagnóstico Principal\": r.diag\r\n  }))\r\n  |> group()\r\n  |> sort(columns: [\"Estación\"])",
                     "refId": "A"
                 }
             ],
@@ -138,7 +215,8 @@
                         "includeByName": {},
                         "indexByName": {
                             "Estación": 0,
-                            "Estado Actual": 1
+                            "Conectividad": 1,
+                            "Diagnóstico Principal": 2
                         },
                         "renameByName": {}
                     }
@@ -154,13 +232,13 @@
         "list": []
     },
     "time": {
-        "from": "2026-02-19T04:01:27.861Z",
-        "to": "2026-02-19T16:01:27.861Z"
+        "from": "now-2d",
+        "to": "now"
     },
     "timepicker": {},
     "timezone": "browser",
     "title": "SeismicMonitor",
     "uid": "ffcrjb8bumy2ob",
-    "version": 3,
+    "version": 5,
     "weekStart": ""
 }
