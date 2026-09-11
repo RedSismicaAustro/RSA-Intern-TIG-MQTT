@@ -36,7 +36,7 @@
             "links": [
                 {
                     "title": "Volver",
-                    "url": "http://10.22.147.102:3000/d/ffcrjb8bumy2ob/seismicmonitor?orgId=1&refresh=5s&from=1771473687861&to=1771516887861"
+                    "url": "/d/ffcrjb8bumy2ob/seismicmonitor?orgId=1&refresh=5s"
                 }
             ],
             "options": {
@@ -51,6 +51,19 @@
             "pluginVersion": "11.2.0",
             "title": "Home",
             "type": "text"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 1
+            },
+            "id": 30,
+            "panels": [],
+            "title": "Salud del Sistema y Hardware (Raspberry Pi)",
+            "type": "row"
         },
         {
             "datasource": {
@@ -85,7 +98,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 1
+                "y": 2
             },
             "id": 4,
             "options": {
@@ -159,7 +172,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 1
+                "y": 2
             },
             "id": 9,
             "options": {
@@ -226,7 +239,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 9
+                "y": 10
             },
             "id": 2,
             "options": {
@@ -295,7 +308,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 9
+                "y": 10
             },
             "id": 5,
             "options": {
@@ -385,7 +398,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 16,
-                "y": 9
+                "y": 10
             },
             "id": 3,
             "options": {
@@ -487,7 +500,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 0,
-                "y": 17
+                "y": 18
             },
             "id": 11,
             "options": {
@@ -513,7 +526,7 @@
                     "refId": "A"
                 }
             ],
-            "title": "Disco",
+            "title": "Disco History",
             "type": "timeseries"
         },
         {
@@ -586,7 +599,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 8,
-                "y": 17
+                "y": 18
             },
             "id": 13,
             "options": {
@@ -612,7 +625,7 @@
                     "refId": "A"
                 }
             ],
-            "title": "Memoria",
+            "title": "Memoria History",
             "type": "timeseries"
         },
         {
@@ -687,7 +700,7 @@
                 "h": 8,
                 "w": 8,
                 "x": 16,
-                "y": 17
+                "y": 18
             },
             "id": 12,
             "options": {
@@ -713,7 +726,7 @@
                     "refId": "A"
                 }
             ],
-            "title": "CPU",
+            "title": "CPU History",
             "type": "timeseries"
         },
         {
@@ -783,7 +796,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 0,
-                "y": 25
+                "y": 26
             },
             "id": 1,
             "options": {
@@ -853,7 +866,7 @@
                 "h": 8,
                 "w": 12,
                 "x": 12,
-                "y": 25
+                "y": 26
             },
             "id": 6,
             "options": {
@@ -880,6 +893,748 @@
                 }
             ],
             "title": "Throttled",
+            "type": "table"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 34
+            },
+            "id": 20,
+            "panels": [],
+            "title": "Salud de Adquisición (Ring Buffer Watchdog)",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [
+                        {
+                            "options": {
+                                "0": {
+                                    "color": "green",
+                                    "index": 0,
+                                    "text": "OK"
+                                },
+                                "1": {
+                                    "color": "semi-dark-yellow",
+                                    "index": 1,
+                                    "text": "ADVERTENCIA"
+                                },
+                                "2": {
+                                    "color": "dark-red",
+                                    "index": 2,
+                                    "text": "ESTANCADO"
+                                }
+                            },
+                            "type": "value"
+                        }
+                    ],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "semi-dark-yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "dark-red",
+                                "value": 2
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 6,
+                "x": 0,
+                "y": 35
+            },
+            "id": 21,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "none",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r.station_id == \"${station}\" and r._field == \"age_seconds\")\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      _time: r._time,\r\n      _value: if r.status == \"error\" or r._value > 300.0 then 2 else if r.status == \"warning\" then 1 else 0\r\n  }))",
+                    "refId": "A"
+                }
+            ],
+            "title": "Estado Ring Buffer",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "palette-classic"
+                    },
+                    "custom": {
+                        "axisBorderShow": false,
+                        "axisCenteredZero": false,
+                        "axisColorMode": "text",
+                        "axisLabel": "Latencia (segundos)",
+                        "axisPlacement": "auto",
+                        "barAlignment": 0,
+                        "drawStyle": "line",
+                        "fillOpacity": 15,
+                        "gradientMode": "opacity",
+                        "lineInterpolation": "linear",
+                        "lineWidth": 2,
+                        "pointSize": 5,
+                        "scaleDistribution": {
+                            "type": "linear"
+                        },
+                        "showPoints": "auto",
+                        "spanNulls": false,
+                        "thresholdsStyle": {
+                            "mode": "line"
+                        }
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "red",
+                                "value": 300
+                            }
+                        ]
+                    },
+                    "unit": "s"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 18,
+                "x": 6,
+                "y": 35
+            },
+            "id": 22,
+            "options": {
+                "legend": {
+                    "calcs": [
+                        "lastNotNull",
+                        "max"
+                    ],
+                    "displayMode": "list",
+                    "placement": "bottom",
+                    "showLegend": true
+                },
+                "tooltip": {
+                    "mode": "single",
+                    "sort": "none"
+                }
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r.station_id == \"${station}\" and r._field == \"age_seconds\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+                    "refId": "A"
+                }
+            ],
+            "title": "Latencia de Adquisición Ring Buffer (age_seconds)",
+            "type": "timeseries"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 42
+            },
+            "id": 23,
+            "panels": [],
+            "title": "Integridad del Sensor Acelerométrico y Reloj",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "description": "Aceleración vertical en reposo (Z ≈ 9.81 ± 0.8 m/s²)",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "dark-red",
+                                "value": null
+                            },
+                            {
+                                "color": "green",
+                                "value": 9.01
+                            },
+                            {
+                                "color": "dark-red",
+                                "value": 10.61
+                            }
+                        ]
+                    },
+                    "unit": "accms2"
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 6,
+                "x": 0,
+                "y": 43
+            },
+            "id": 24,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r.station_id == \"${station}\" and r._field == \"az\")\r\n  |> last()",
+                    "refId": "A"
+                }
+            ],
+            "title": "Calibración Triaxial (Z)",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ax"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Acc X (m/s²)"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "accms2"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "ay"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Acc Y (m/s²)"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "accms2"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "az"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Acc Z (m/s²)"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "accms2"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "clock_source"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Fuente Reloj"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "status"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Estado"
+                            },
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "type": "color-background"
+                                }
+                            },
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "options": {
+                                            "error": {
+                                                "color": "dark-red",
+                                                "index": 1,
+                                                "text": "ERROR"
+                                            },
+                                            "ok": {
+                                                "color": "green",
+                                                "index": 0,
+                                                "text": "OK"
+                                            }
+                                        },
+                                        "type": "value"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "reason"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Diagnóstico / Motivo"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 18,
+                "x": 6,
+                "y": 43
+            },
+            "id": 25,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "enablePagination": false,
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": []
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r._field == \"ax\" or r._field == \"ay\" or r._field == \"az\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> keep(columns: [\"_time\", \"ax\", \"ay\", \"az\", \"clock_source\", \"status\", \"reason\"])\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> limit(n: 10)",
+                    "refId": "A"
+                }
+            ],
+            "title": "Historial de Integridad Triaxial y Reloj",
+            "type": "table"
+        },
+        {
+            "collapsed": false,
+            "gridPos": {
+                "h": 1,
+                "w": 24,
+                "x": 0,
+                "y": 50
+            },
+            "id": 26,
+            "panels": [],
+            "title": "Sincronización con Google Drive",
+            "type": "row"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "semi-dark-yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "dark-red",
+                                "value": 5
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 4,
+                "x": 0,
+                "y": 51
+            },
+            "id": 27,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\" and r._field == \"pending_mseed\")\r\n  |> last()",
+                    "refId": "A"
+                }
+            ],
+            "title": "Pendientes de Subida (.mseed)",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "description": "Archivos mseed protegidos localmente tras error de sincronización",
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            },
+                            {
+                                "color": "semi-dark-yellow",
+                                "value": 1
+                            },
+                            {
+                                "color": "dark-red",
+                                "value": 3
+                            }
+                        ]
+                    }
+                },
+                "overrides": []
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 4,
+                "x": 4,
+                "y": 51
+            },
+            "id": 28,
+            "options": {
+                "colorMode": "background",
+                "graphMode": "area",
+                "justifyMode": "auto",
+                "orientation": "auto",
+                "reduceOptions": {
+                    "calcs": [
+                        "lastNotNull"
+                    ],
+                    "fields": "",
+                    "values": false
+                },
+                "textMode": "auto"
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\" and r._field == \"failed_uploads_protected\")\r\n  |> last()",
+                    "refId": "A"
+                }
+            ],
+            "title": "Protegidos por Fallo",
+            "type": "stat"
+        },
+        {
+            "datasource": {
+                "type": "influxdb",
+                "uid": "P951FEA4DE68E13C5"
+            },
+            "fieldConfig": {
+                "defaults": {
+                    "color": {
+                        "mode": "thresholds"
+                    },
+                    "custom": {
+                        "align": "auto",
+                        "cellOptions": {
+                            "type": "auto"
+                        },
+                        "inspect": false
+                    },
+                    "mappings": [],
+                    "thresholds": {
+                        "mode": "absolute",
+                        "steps": [
+                            {
+                                "color": "green",
+                                "value": null
+                            }
+                        ]
+                    }
+                },
+                "overrides": [
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "pending_mseed"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Pendientes"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "failed_uploads_protected"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Protegidos"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "free_disk_percent"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Disco Libre (%)"
+                            },
+                            {
+                                "id": "unit",
+                                "value": "percent"
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "status"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Estado"
+                            },
+                            {
+                                "id": "custom.cellOptions",
+                                "value": {
+                                    "type": "color-background"
+                                }
+                            },
+                            {
+                                "id": "mappings",
+                                "value": [
+                                    {
+                                        "options": {
+                                            "error": {
+                                                "color": "dark-red",
+                                                "index": 2,
+                                                "text": "ERROR"
+                                            },
+                                            "ok": {
+                                                "color": "green",
+                                                "index": 0,
+                                                "text": "OK"
+                                            },
+                                            "warning": {
+                                                "color": "semi-dark-yellow",
+                                                "index": 1,
+                                                "text": "ADVERTENCIA"
+                                            }
+                                        },
+                                        "type": "value"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                    {
+                        "matcher": {
+                            "id": "byName",
+                            "options": "reason"
+                        },
+                        "properties": [
+                            {
+                                "id": "displayName",
+                                "value": "Motivo"
+                            }
+                        ]
+                    }
+                ]
+            },
+            "gridPos": {
+                "h": 7,
+                "w": 16,
+                "x": 8,
+                "y": 51
+            },
+            "id": 29,
+            "options": {
+                "cellHeight": "sm",
+                "footer": {
+                    "countRows": false,
+                    "enablePagination": false,
+                    "show": false
+                },
+                "showHeader": true,
+                "sortBy": []
+            },
+            "pluginVersion": "11.2.0",
+            "targets": [
+                {
+                    "datasource": {
+                        "type": "influxdb",
+                        "uid": "P951FEA4DE68E13C5"
+                    },
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r._field == \"pending_mseed\" or r._field == \"failed_uploads_protected\" or r._field == \"free_disk_percent\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> keep(columns: [\"_time\", \"pending_mseed\", \"failed_uploads_protected\", \"free_disk_percent\", \"status\", \"reason\"])\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> limit(n: 10)",
+                    "refId": "A"
+                }
+            ],
+            "title": "Historial de Sincronización Google Drive",
             "type": "table"
         }
     ],
@@ -956,6 +1711,6 @@
     "timezone": "browser",
     "title": "Health",
     "uid": "ffcrjb8bumy2ob2",
-    "version": 3,
+    "version": 5,
     "weekStart": ""
 }
