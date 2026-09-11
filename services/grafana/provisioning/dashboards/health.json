@@ -53,7 +53,7 @@
             "type": "text"
         },
         {
-            "collapsed": false,
+            "collapsed": true,
             "gridPos": {
                 "h": 1,
                 "w": 24,
@@ -61,11 +61,10 @@
                 "y": 1
             },
             "id": 30,
-            "panels": [],
             "title": "Salud del Sistema y Hardware (Raspberry Pi)",
-            "type": "row"
-        },
-        {
+            "type": "row",
+            "panels": [
+                {
             "datasource": {
                 "default": false,
                 "type": "influxdb",
@@ -894,20 +893,21 @@
             ],
             "title": "Throttled",
             "type": "table"
-        },
-        {
-            "collapsed": false,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 34
-            },
-            "id": 20,
-            "panels": [],
-            "title": "Salud de Adquisición (Ring Buffer Watchdog)",
-            "type": "row"
-        },
+        }
+    ]
+},
+{
+    "collapsed": true,
+    "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 2
+    },
+    "id": 20,
+    "title": "Salud de Adquisición (Ring Buffer Watchdog)",
+    "type": "row",
+    "panels": [
         {
             "datasource": {
                 "type": "influxdb",
@@ -1080,20 +1080,21 @@
             ],
             "title": "Latencia de Adquisición Ring Buffer (age_seconds)",
             "type": "timeseries"
-        },
-        {
-            "collapsed": false,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 42
-            },
-            "id": 23,
-            "panels": [],
-            "title": "Integridad del Sensor Acelerométrico y Reloj",
-            "type": "row"
-        },
+        }
+    ]
+},
+{
+    "collapsed": true,
+    "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 3
+    },
+    "id": 23,
+    "title": "Integridad del Sensor Acelerométrico y Reloj",
+    "type": "row",
+    "panels": [
         {
             "datasource": {
                 "type": "influxdb",
@@ -1333,20 +1334,21 @@
             ],
             "title": "Historial de Integridad Triaxial y Reloj",
             "type": "table"
-        },
-        {
-            "collapsed": false,
-            "gridPos": {
-                "h": 1,
-                "w": 24,
-                "x": 0,
-                "y": 50
-            },
-            "id": 26,
-            "panels": [],
-            "title": "Sincronización con Google Drive",
-            "type": "row"
-        },
+        }
+    ]
+},
+{
+    "collapsed": true,
+    "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 4
+    },
+    "id": 26,
+    "title": "Sincronización con Google Drive",
+    "type": "row",
+    "panels": [
         {
             "datasource": {
                 "type": "influxdb",
@@ -1637,6 +1639,8 @@
             "title": "Historial de Sincronización Google Drive",
             "type": "table"
         }
+    ]
+}
     ],
     "refresh": "5s",
     "schemaVersion": 39,
@@ -1711,6 +1715,6 @@
     "timezone": "browser",
     "title": "Health",
     "uid": "ffcrjb8bumy2ob2",
-    "version": 5,
+    "version": 8,
     "weekStart": ""
 }

@@ -135,25 +135,37 @@
                                                 "color": "semi-dark-yellow",
                                                 "index": 1
                                             },
-                                            "Hardware": {
+                                            "Throttled": {
                                                 "color": "semi-dark-yellow",
                                                 "index": 2
                                             },
+                                            "Hardware": {
+                                                "color": "semi-dark-yellow",
+                                                "index": 3
+                                            },
+                                            "Temperatura": {
+                                                "color": "dark-orange",
+                                                "index": 4
+                                            },
+                                            "Memoria": {
+                                                "color": "dark-orange",
+                                                "index": 5
+                                            },
                                             "Disco": {
                                                 "color": "dark-orange",
-                                                "index": 3
+                                                "index": 6
                                             },
                                             "Sensor": {
                                                 "color": "dark-red",
-                                                "index": 4
+                                                "index": 7
                                             },
                                             "Adquisicion": {
                                                 "color": "dark-red",
-                                                "index": 5
+                                                "index": 8
                                             },
                                             "Offline": {
                                                 "color": "dark-red",
-                                                "index": 6
+                                                "index": 9
                                             }
                                         },
                                         "type": "value"
@@ -202,7 +214,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "conn_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"state\" and r._field == \"status\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value == \"offline\" then 6 else 0,\r\n      diag: if r._value == \"offline\" then \"Offline\" else \"OK\"\r\n  }))\r\n\r\nacq_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r._field == \"age_seconds\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"error\" or r._value > 300.0 then 5 else 0,\r\n      diag: if r.status == \"error\" or r._value > 300.0 then \"Adquisicion\" else \"OK\"\r\n  }))\r\n\r\nsensor_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r._field == \"az\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"error\" then 4 else 0,\r\n      diag: if r.status == \"error\" then \"Sensor\" else \"OK\"\r\n  }))\r\n\r\ndisk_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"disk_percent\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 95.0 then 3 else if r._value > 85.0 then 2 else 0,\r\n      diag: if r._value > 85.0 then \"Disco\" else \"OK\"\r\n  }))\r\n\r\ndrive_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r._field == \"pending_mseed\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"warning\" or r._value > 3 then 2 else 0,\r\n      diag: if r.status == \"warning\" or r._value > 3 then \"Drive\" else \"OK\"\r\n  }))\r\n\r\ntemp_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"cpu_temp_c\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 70.0 then 1 else 0,\r\n      diag: if r._value > 70.0 then \"Hardware\" else \"OK\"\r\n  }))\r\n\r\nthrottled_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"throttled\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value != \"0x0\" and r._value != \"\" then 1 else 0,\r\n      diag: if r._value != \"0x0\" and r._value != \"\" then \"Hardware\" else \"OK\"\r\n  }))\r\n\r\nunion(tables: [conn_vote, acq_vote, sensor_vote, drive_vote, disk_vote, temp_vote, throttled_vote])\r\n  |> group(columns: [\"station_id\"])\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 1)\r\n  |> map(fn: (r) => ({\r\n      \"Estación\": r.station_id,\r\n      \"Conectividad\": if r.diag == \"Offline\" then \"offline\" else \"online\",\r\n      \"Diagnóstico Principal\": r.diag\r\n  }))\r\n  |> group()\r\n  |> sort(columns: [\"Estación\"])",
+                    "query": "conn_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"state\" and r._field == \"status\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value == \"offline\" then 6 else 0,\r\n      diag: if r._value == \"offline\" then \"Offline\" else \"OK\"\r\n  }))\r\n\r\nacq_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r._field == \"age_seconds\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"error\" or r._value > 300.0 then 5 else 0,\r\n      diag: if r.status == \"error\" or r._value > 300.0 then \"Adquisicion\" else \"OK\"\r\n  }))\r\n\r\nsensor_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r._field == \"az\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"error\" then 4 else 0,\r\n      diag: if r.status == \"error\" then \"Sensor\" else \"OK\"\r\n  }))\r\n\r\ndisk_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"disk_percent\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 95.0 then 3 else if r._value > 85.0 then 2 else 0,\r\n      diag: if r._value > 85.0 then \"Disco\" else \"OK\"\r\n  }))\r\n\r\ndrive_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r._field == \"pending_mseed\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r.status == \"warning\" or r._value > 3 then 2 else 0,\r\n      diag: if r.status == \"warning\" or r._value > 3 then \"Drive\" else \"OK\"\r\n  }))\r\n\r\ntemp_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"cpu_temp_c\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 70.0 then 1 else 0,\r\n      diag: if r._value > 70.0 then \"Temperatura\" else \"OK\"\r\n  }))\r\n\r\nthrottled_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"throttled\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value != \"0x0\" and r._value != \"\" then 1 else 0,\r\n      diag: if r._value != \"0x0\" and r._value != \"\" then \"Throttled\" else \"OK\"\r\n  }))\r\n\r\nram_vote = from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\" and r.data_type == \"health\" and r._field == \"ram_percent\")\r\n  |> filter(fn: (r) => r.station_id =~ /^(CHA1|CHA2|DEV0|FERR|TENG|TEST)$/)\r\n  |> group(columns: [\"station_id\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      station_id: r.station_id,\r\n      _value: if r._value > 90.0 then 1 else 0,\r\n      diag: if r._value > 90.0 then \"Memoria\" else \"OK\"\r\n  }))\r\n\r\nunion(tables: [conn_vote, acq_vote, sensor_vote, drive_vote, disk_vote, temp_vote, throttled_vote, ram_vote])\r\n  |> group(columns: [\"station_id\"])\r\n  |> sort(columns: [\"_value\"], desc: true)\r\n  |> limit(n: 1)\r\n  |> map(fn: (r) => ({\r\n      \"Estación\": r.station_id,\r\n      \"Conectividad\": if r.diag == \"Offline\" then \"offline\" else \"online\",\r\n      \"Diagnóstico Principal\": r.diag\r\n  }))\r\n  |> group()\r\n  |> sort(columns: [\"Estación\"])",
                     "refId": "A"
                 }
             ],
@@ -239,6 +251,6 @@
     "timezone": "browser",
     "title": "SeismicMonitor",
     "uid": "ffcrjb8bumy2ob",
-    "version": 5,
+    "version": 7,
     "weekStart": ""
 }
