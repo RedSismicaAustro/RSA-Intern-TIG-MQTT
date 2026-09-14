@@ -256,19 +256,19 @@ def get_scenarios_meta():
         },
         {
             "id": 5,
-            "nombre": "Alerta de Subvoltaje / Throttled en Raspberry Pi",
-            "descripcion": "Adquisición, Sensor y Drive OK. Registro de hardware reporta throttled = 0x50000.",
-            "diag_esperado": "Throttled",
-            "color_esperado": "Amarillo (semi-dark-yellow)",
+            "nombre": "Alerta de Memoria RAM Crítica (Uso > 90%)",
+            "descripcion": "Adquisición, Sensor y Drive OK. Memoria RAM al 93.5% (umbral de alerta > 90%).",
+            "diag_esperado": "Memoria",
+            "color_esperado": "Naranja (dark-orange)",
             "build_fn": lambda s, now: build_scenario_messages(s, now, overrides={
                 "health": (
                     f"rsa/seismic/smart/{s}/telemetry/health",
                     {
                         "disk_percent": 45.0,
                         "cpu_temp_c": 50.0,
-                        "ram_percent": 28.0,
-                        "load_avg_15m": 0.35,
-                        "throttled": "0x50000",
+                        "ram_percent": 93.5,
+                        "load_avg_15m": 0.85,
+                        "throttled": "0x0",
                         "timestamp": now
                     }
                 )
@@ -276,15 +276,15 @@ def get_scenarios_meta():
         },
         {
             "id": 6,
-            "nombre": "Alerta de Espacio en Disco Crítico",
-            "descripcion": "Adquisición, Sensor y Drive OK. Uso de disco al 89.5% (umbral advertencia > 85%).",
+            "nombre": "Alerta de Espacio en Disco Crítico (Uso > 90%)",
+            "descripcion": "Adquisición, Sensor y Drive OK. Uso de disco al 93.0% (umbral de alerta > 90%, menos de 10% libre).",
             "diag_esperado": "Disco",
             "color_esperado": "Naranja (dark-orange)",
             "build_fn": lambda s, now: build_scenario_messages(s, now, overrides={
                 "health": (
                     f"rsa/seismic/smart/{s}/telemetry/health",
                     {
-                        "disk_percent": 89.5,
+                        "disk_percent": 93.0,
                         "cpu_temp_c": 49.0,
                         "ram_percent": 28.0,
                         "load_avg_15m": 0.30,

@@ -483,11 +483,11 @@
                             },
                             {
                                 "color": "yellow",
-                                "value": 80
+                                "value": 90
                             },
                             {
                                 "color": "dark-red",
-                                "value": 90
+                                "value": 95
                             }
                         ]
                     },
@@ -848,12 +848,8 @@
                         "mode": "absolute",
                         "steps": [
                             {
-                                "color": "green",
+                                "color": "text",
                                 "value": null
-                            },
-                            {
-                                "color": "red",
-                                "value": 80
                             }
                         ]
                     },
@@ -1715,6 +1711,6 @@
     "timezone": "browser",
     "title": "Health",
     "uid": "ffcrjb8bumy2ob2",
-    "version": 8,
+    "version": 9,
     "weekStart": ""
 }
