@@ -193,7 +193,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\") \r\n  |> filter(fn: (r) => r.data_type == \"state\")   \r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\"])\r\n  |> sort(columns: [\"_time\"], desc: true)",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: -7d)\r\n  |> filter(fn: (r) => r._measurement == \"rsa\")\r\n  |> filter(fn: (r) => r.station_id == \"${station}\") \r\n  |> filter(fn: (r) => r.data_type == \"state\")   \r\n  |> filter(fn: (r) => r._field == \"status\")\r\n  |> drop(columns: [\"host\", \"topic\", \"station_id\"])\r\n  // Asignar un ID numérico por cada estado para detectar transiciones\r\n  |> map(fn: (r) => ({\r\n      r with \r\n      state_code: if r._value == \"online\" then 1\r\n                  else if r._value == \"on\" then 2\r\n                  else if r._value == \"offline\" then 0\r\n                  else -1\r\n  }))\r\n  // Calcula la diferencia entre filas consecutivas (0 significa que el estado no cambió)\r\n  |> difference(columns: [\"state_code\"], keepFirst: true)\r\n  // Filtrar solo cuando hay cambio (diferencia != 0) o cuando state_code es null (la primera fila)\r\n  |> filter(fn: (r) => not exists r.state_code or r.state_code != 0)\r\n  |> drop(columns: [\"state_code\"])\r\n  |> sort(columns: [\"_time\"], desc: true)",
                     "refId": "A"
                 }
             ],
@@ -883,7 +883,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"throttled\")\r\n  |> sort(columns: [\"_time\"], desc: true)",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r[\"_measurement\"] == \"rsa\")\r\n  |> filter(fn: (r) => r[\"station_id\"] == \"${station}\")\r\n  |> filter(fn: (r) => r[\"data_type\"] == \"health\")\r\n  |> filter(fn: (r) => r[\"_field\"] == \"throttled\")\r\n  // elapsed calcula el tiempo transcurrido, pero nos sirve para detectar continuidad\r\n  // Otra alternativa 100% nativa sin int(): mapear cada hex a su hash/bytes\r\n  |> map(fn: (r) => ({\r\n      r with \r\n      // Se toma la longitud o una función determinista, \r\n      // pero si conocemos los posibles estados hex de vcgencmd podemos listarlos:\r\n      state_code: if r._value == \"0x0\" or r._value == \"0\" then 0\r\n                  else if r._value == \"0x50000\" then 1\r\n                  else if r._value == \"0x50005\" then 2\r\n                  else if r._value == \"0xd0000\" or r._value == \"0xD0000\" then 3\r\n                  else if r._value == \"0xd0008\" or r._value == \"0xD0008\" then 4\r\n                  else if r._value == \"0x20000\" or r._value == \"0x20002\" then 5\r\n                  else 99\r\n  }))\r\n  |> difference(columns: [\"state_code\"], keepFirst: true)\r\n  |> filter(fn: (r) => not exists r.state_code or r.state_code != 0)\r\n  |> drop(columns: [\"state_code\"])\r\n  |> sort(columns: [\"_time\"], desc: true)",
                     "refId": "A"
                 }
             ],
@@ -984,7 +984,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r.station_id == \"${station}\" and r._field == \"age_seconds\")\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      _time: r._time,\r\n      _value: if r.status == \"error\" or r._value > 300.0 then 2 else if r.status == \"warning\" then 1 else 0\r\n  }))",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r.station_id == \"${station}\" and r._field == \"age_seconds\")\r\n  |> group(columns: [\"_measurement\", \"_field\", \"station_id\"])\r\n  |> sort(columns: [\"_time\"])\r\n  |> last()\r\n  |> map(fn: (r) => ({\r\n      _time: r._time,\r\n      _value: if r.status == \"error\" or r._value > 300.0 then 2 else if r.status == \"warning\" then 1 else 0\r\n  }))",
                     "refId": "A"
                 }
             ],
@@ -1070,7 +1070,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r.station_id == \"${station}\" and r._field == \"age_seconds\")\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_acquisition\" and r.station_id == \"${station}\" and r._field == \"age_seconds\")\r\n  // Colapsa todas las series (ok, warning, stale_data, etc.) en un solo flujo continuo\r\n  |> group(columns: [\"_measurement\", \"_field\", \"station_id\"])\r\n  |> aggregateWindow(every: v.windowPeriod, fn: mean, createEmpty: false)\r\n  |> yield(name: \"mean\")",
                     "refId": "A"
                 }
             ],
@@ -1152,7 +1152,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r.station_id == \"${station}\" and r._field == \"az\")\r\n  |> last()",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r.station_id == \"${station}\" and r._field == \"az\")\r\n  // Colapsa todas las series/tags en una única tabla\r\n  |> group(columns: [\"_measurement\", \"_field\", \"station_id\"])\r\n  |> sort(columns: [\"_time\"])\r\n  |> last()",
                     "refId": "A"
                 }
             ],
@@ -1324,7 +1324,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r._field == \"ax\" or r._field == \"ay\" or r._field == \"az\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> keep(columns: [\"_time\", \"ax\", \"ay\", \"az\", \"clock_source\", \"status\", \"reason\"])\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> limit(n: 10)",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_sensor\" and r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r._field == \"ax\" or r._field == \"ay\" or r._field == \"az\")\r\n  // 1. Colapsar todas las series en un único grupo antes de pivotar\r\n  |> group(columns: [\"_measurement\", \"station_id\"])\r\n  // 2. Incluir en rowKey las columnas que identifican cada registro para no perder el contexto del estado\r\n  |> pivot(\r\n      rowKey: [\"_time\", \"clock_source\", \"status\", \"reason\"], \r\n      columnKey: [\"_field\"], \r\n      valueColumn: \"_value\"\r\n  )\r\n  |> keep(columns: [\"_time\", \"ax\", \"ay\", \"az\", \"clock_source\", \"status\", \"reason\"])\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> limit(n: 10)",
                     "refId": "A"
                 }
             ],
@@ -1404,7 +1404,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\" and r._field == \"pending_mseed\")\r\n  |> last()",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\" and r._field == \"pending_mseed\")\r\n  |> group(columns: [\"_measurement\", \"_field\", \"station_id\"])\r\n  |> sort(columns: [\"_time\"])\r\n  |> last()",
                     "refId": "A"
                 }
             ],
@@ -1471,7 +1471,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\" and r._field == \"failed_uploads_protected\")\r\n  |> last()",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\" and r._field == \"failed_uploads_protected\")\r\n  |> group(columns: [\"_measurement\", \"_field\", \"station_id\"])\r\n  |> sort(columns: [\"_time\"])\r\n  |> last()",
                     "refId": "A"
                 }
             ],
@@ -1628,7 +1628,7 @@
                         "type": "influxdb",
                         "uid": "P951FEA4DE68E13C5"
                     },
-                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r._field == \"pending_mseed\" or r._field == \"failed_uploads_protected\" or r._field == \"free_disk_percent\")\r\n  |> pivot(rowKey: [\"_time\"], columnKey: [\"_field\"], valueColumn: \"_value\")\r\n  |> keep(columns: [\"_time\", \"pending_mseed\", \"failed_uploads_protected\", \"free_disk_percent\", \"status\", \"reason\"])\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> limit(n: 10)",
+                    "query": "from(bucket: \"telemetry\")\r\n  |> range(start: v.timeRangeStart, stop: v.timeRangeStop)\r\n  |> filter(fn: (r) => r._measurement == \"station_drive\" and r.station_id == \"${station}\")\r\n  |> filter(fn: (r) => r._field == \"pending_mseed\" or r._field == \"failed_uploads_protected\" or r._field == \"free_disk_percent\")\r\n  // Colapsar todas las series en un único grupo antes de pivotar\r\n  |> group(columns: [\"_measurement\", \"station_id\"])\r\n  // Incluir en rowKey las columnas que identifican cada registro para no perder el contexto del estado\r\n  |> pivot(\r\n      rowKey: [\"_time\", \"status\", \"reason\"], \r\n      columnKey: [\"_field\"], \r\n      valueColumn: \"_value\"\r\n  )\r\n  |> keep(columns: [\"_time\", \"pending_mseed\", \"failed_uploads_protected\", \"free_disk_percent\", \"status\", \"reason\"])\r\n  |> sort(columns: [\"_time\"], desc: true)\r\n  |> limit(n: 10)",
                     "refId": "A"
                 }
             ],
@@ -1711,6 +1711,6 @@
     "timezone": "browser",
     "title": "Health",
     "uid": "ffcrjb8bumy2ob2",
-    "version": 9,
+    "version": 10,
     "weekStart": ""
 }
