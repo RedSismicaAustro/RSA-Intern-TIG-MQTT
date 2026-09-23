@@ -7,10 +7,10 @@ generado: 2026-09-23
 ---
 # health.json — Contexto para Agentes IA
 
-> Dashboard detallado de salud y telemetría por estación en Grafana (v12), estructurado en cuatro filas colapsables por defecto (Hardware/Sistema, Watchdog de Adquisición, Integridad del Sensor/Reloj y Sincronización con Google Drive) con deduplicación matemática de transiciones en Flux y ordenamiento homogéneo de columnas en tablas de auditoría.
+> Dashboard detallado de salud y telemetría por estación en Grafana (v13), estructurado en cuatro filas colapsables por defecto (Hardware/Sistema, Watchdog de Adquisición, Integridad del Sensor/Reloj y Sincronización con Google Drive) con deduplicación selectiva de transiciones en Flux, muestreo continuo de 30 filas en sensor y ordenamiento homogéneo de columnas con Estado al final.
 
 **Ruta**: `services/grafana/provisioning/dashboards/health.json`  
-**LOC**: 1747 | **Lenguaje/Formato**: JSON (Grafana Dashboard Model v39, dashboard version 12) | **Dependencias**: Grafana 11.2.0, InfluxDB v2 Datasource (`uid: P951FEA4DE68E13C5`), Variable de plantilla `$station`, Dashboard SeismicMonitor (`uid: ffcrjb8bumy2ob`)  
+**LOC**: 1747 | **Lenguaje/Formato**: JSON (Grafana Dashboard Model v39, dashboard version 13) | **Dependencias**: Grafana 11.2.0, InfluxDB v2 Datasource (`uid: P951FEA4DE68E13C5`), Variable de plantilla `$station`, Dashboard SeismicMonitor (`uid: ffcrjb8bumy2ob`)  
 **Proceso**: Provisionado automáticamente en el arranque de Grafana vía `services/grafana/provisioning/dashboards/dashboards.yaml`.
 
 ---
